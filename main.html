@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Chronicles — A TTRPG Journal Keeping</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root {
+  --ink:#1a1410;--parchment:#f5edd8;--parchment-dark:#e8d9b8;
+  --leather:#2d1f0e;--gold:#c8a84b;--gold-light:#e8c96a;--gold-dim:#7a6428;
+  --blood:#8b1a1a;--blood-light:#c0392b;--ember:#d4572a;
+  --shadow:rgba(0,0,0,0.7);--panel:rgba(20,13,5,0.92);--panel-light:rgba(35,22,8,0.85);
+  --border-gold:1px solid #c8a84b55;--radius:4px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background-color:#0d0a06;background-image:radial-gradient(ellipse at 20% 10%,#2d1a08 0%,transparent 50%),radial-gradient(ellipse at 80% 90%,#1a0d05 0%,transparent 50%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");min-height:100vh;font-family:'Crimson Pro',Georgia,serif;color:var(--parchment);overflow-x:hidden;}
+header{text-align:center;padding:2.5rem 1rem 1rem;position:relative;}
+header::before,header::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:80%;max-width:700px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+header::before{top:0;}header::after{bottom:0;}
+.logo-rune{font-size:2rem;margin-bottom:.3rem;opacity:.7;filter:drop-shadow(0 0 8px var(--gold));animation:flicker 4s infinite;}
+@keyframes flicker{0%,100%{opacity:.7}50%{opacity:.55}75%{opacity:.72}85%{opacity:.5}}
+h1{font-family:'Cinzel Decorative',serif;font-size:clamp(1.6rem,5vw,2.8rem);font-weight:700;color:var(--gold-light);text-shadow:0 0 20px rgba(200,168,75,.4),0 2px 4px rgba(0,0,0,.8);letter-spacing:.05em;line-height:1.1;}
+.subtitle{font-family:'IM Fell English',serif;font-style:italic;color:var(--gold-dim);font-size:.95rem;margin-top:.4rem;letter-spacing:.1em;}
+nav{display:flex;justify-content:center;gap:.25rem;padding:1.2rem 1rem;flex-wrap:wrap;}
+.nav-btn{font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:.55rem 1.4rem;background:transparent;border:1px solid var(--gold-dim);color:var(--gold-dim);cursor:pointer;transition:all .2s;clip-path:polygon(8px 0%,calc(100% - 8px) 0%,100% 50%,calc(100% - 8px) 100%,8px 100%,0% 50%);}
+.nav-btn:hover{border-color:var(--gold);color:var(--gold-light);background:rgba(200,168,75,.08);}
+.nav-btn.active{border-color:var(--gold);color:var(--ink);background:var(--gold);text-shadow:none;}
+main{max-width:1100px;margin:0 auto;padding:0 1rem 4rem;}
+.tab-panel{display:none;}.tab-panel.active{display:block;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--panel);border:var(--border-gold);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.2rem;position:relative;box-shadow:0 4px 24px rgba(0,0,0,.6),inset 0 1px 0 rgba(200,168,75,.1);}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}
+.section-title{font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:1rem;display:flex;align-items:center;gap:.7rem;}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--gold-dim),transparent);}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.8rem;}
+.form-full{grid-column:1/-1;}
+label{display:block;font-family:'Cinzel',serif;font-size:.6rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.35rem;}
+input[type=text],input[type=number],textarea,select{width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:1rem;padding:.5rem .7rem;outline:none;border-radius:2px;transition:border-color .2s;}
+input:focus,textarea:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,168,75,.1);}
+textarea{resize:vertical;min-height:90px;line-height:1.6;}
+select option{background:#1a0d05;}
+.btn{font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:.6rem 1.4rem;border:none;cursor:pointer;transition:all .2s;}
+.btn-primary{background:linear-gradient(135deg,#b8932a,#e8c96a);color:var(--ink);box-shadow:0 2px 8px rgba(200,168,75,.3);}
+.btn-primary:hover{box-shadow:0 4px 16px rgba(200,168,75,.5);transform:translateY(-1px);}
+.btn-danger{background:transparent;color:var(--blood-light);border:1px solid var(--blood);font-size:.6rem;}
+.btn-danger:hover{background:var(--blood);color:var(--parchment);}
+.btn-ghost{background:transparent;color:var(--gold-dim);border:1px solid #3a2910;font-size:.65rem;}
+.btn-ghost:hover{border-color:var(--gold-dim);color:var(--gold);}
+.btn-drive{background:linear-gradient(135deg,#1a3a1a,#2a6a2a);color:#90ee90;border:1px solid #2a5a2a;font-size:.7rem;}
+.btn-drive:hover{background:linear-gradient(135deg,#2a6a2a,#3a9a3a);box-shadow:0 4px 12px rgba(42,106,42,.4);transform:translateY(-1px);}
+.btn-drive:disabled{opacity:.4;cursor:not-allowed;transform:none;pointer-events:none;}
+.btn-pdf{background:linear-gradient(135deg,#4a1a1a,#8b2020);color:#ffaaaa;border:1px solid #6b1a1a;font-size:.7rem;}
+.btn-pdf:hover{background:linear-gradient(135deg,#7a2020,#b03030);box-shadow:0 4px 12px rgba(139,32,32,.4);transform:translateY(-1px);}
+/* chars */
+.chars-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.2rem;margin-bottom:1.5rem;}
+.char-card{background:var(--panel);border:1px solid #3a2910;border-radius:var(--radius);overflow:hidden;transition:border-color .2s,box-shadow .2s;cursor:pointer;}
+.char-card:hover{border-color:var(--gold-dim);box-shadow:0 0 16px rgba(200,168,75,.15);}
+.char-card.expanded{border-color:var(--gold);}
+.char-header{padding:1rem 1.2rem;background:linear-gradient(135deg,rgba(45,31,14,.8),rgba(20,13,5,.9));border-bottom:1px solid #3a2910;display:flex;align-items:center;justify-content:space-between;}
+.char-name{font-family:'Cinzel',serif;font-size:1.05rem;font-weight:700;color:var(--gold-light);}
+.char-meta{font-family:'IM Fell English',serif;font-style:italic;font-size:.85rem;color:var(--gold-dim);margin-top:.1rem;}
+.char-badge{font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.1em;padding:.2rem .6rem;border:1px solid var(--gold-dim);color:var(--gold-dim);text-transform:uppercase;}
+.char-body{padding:1rem 1.2rem;}
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:.4rem;margin:.8rem 0;}
+.stat-box{background:rgba(0,0,0,.4);border:1px solid #3a2910;border-radius:2px;padding:.4rem .2rem;text-align:center;}
+.stat-label{font-family:'Cinzel',serif;font-size:.5rem;font-weight:700;letter-spacing:.1em;color:var(--gold-dim);display:block;text-transform:uppercase;}
+.stat-val{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:700;color:var(--parchment);display:block;line-height:1.2;}
+.stat-mod{font-size:.65rem;color:var(--gold-dim);}
+.hp-bar-wrap{margin:.7rem 0;}
+.hp-label{display:flex;justify-content:space-between;font-family:'Cinzel',serif;font-size:.6rem;font-weight:600;letter-spacing:.1em;color:var(--gold-dim);margin-bottom:.3rem;}
+.hp-bar{height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;border:1px solid #3a2910;}
+.hp-fill{height:100%;border-radius:3px;transition:width .5s ease;background:linear-gradient(90deg,var(--blood),var(--ember));}
+.char-notes{font-family:'IM Fell English',serif;font-style:italic;font-size:.9rem;color:#a89060;line-height:1.6;margin-top:.7rem;padding-top:.7rem;border-top:1px solid #2a1a08;}
+.char-actions{display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap;}
+.hp-editor{display:flex;align-items:center;gap:.5rem;margin-top:.5rem;}
+.hp-editor input{width:70px;text-align:center;}
+/* journal */
+.journal-entry{background:var(--panel);border:1px solid #2a1a08;border-left:3px solid var(--gold-dim);padding:1.2rem 1.4rem;margin-bottom:1rem;transition:border-left-color .2s;}
+.journal-entry:hover{border-left-color:var(--gold);}
+.entry-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.6rem;gap:1rem;flex-wrap:wrap;}
+.entry-title{font-family:'Cinzel',serif;font-size:1rem;font-weight:600;color:var(--gold-light);}
+.entry-meta{font-family:'IM Fell English',serif;font-style:italic;font-size:.78rem;color:var(--gold-dim);white-space:nowrap;}
+.entry-tag{display:inline-block;font-family:'Cinzel',serif;font-size:.55rem;font-weight:600;letter-spacing:.12em;padding:.15rem .5rem;border:1px solid;border-radius:2px;text-transform:uppercase;margin-right:.3rem;}
+.tag-session{border-color:#5a7a3a;color:#7aaa4a;}.tag-lore{border-color:#3a5a7a;color:#4a8aaa;}
+.tag-quest{border-color:#7a5a2a;color:#c8922a;}.tag-npc{border-color:#6a3a6a;color:#aa6aaa;}
+.tag-other{border-color:#3a3a3a;color:#888;}
+.entry-body{font-family:'IM Fell English',serif;font-size:.97rem;line-height:1.75;color:#c8b88a;white-space:pre-wrap;}
+/* dice */
+.dice-section{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+@media(max-width:640px){.dice-section{grid-template-columns:1fr;}}
+.dice-pad{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin:1rem 0;}
+.die-btn{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,6,2,.9);border:1px solid #3a2910;color:var(--parchment);cursor:pointer;font-family:'Cinzel',serif;transition:all .15s;position:relative;overflow:hidden;}
+.die-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--gold),var(--ember));opacity:0;transition:opacity .2s;}
+.die-btn:hover::before{opacity:.15;}.die-btn:hover{border-color:var(--gold-dim);transform:scale(1.04);}.die-btn:active{transform:scale(.97);}
+.die-btn.rolling{animation:dieShake .4s ease;border-color:var(--gold);}
+@keyframes dieShake{0%{transform:rotate(-8deg) scale(1.05)}25%{transform:rotate(6deg) scale(1.08)}50%{transform:rotate(-5deg) scale(1.06)}75%{transform:rotate(4deg) scale(1.04)}100%{transform:rotate(0) scale(1)}}
+.die-icon{font-size:1.6rem;line-height:1;z-index:1;}.die-label{font-size:.65rem;font-weight:700;letter-spacing:.1em;z-index:1;color:var(--gold-dim);margin-top:.2rem;}
+.modifier-row{display:flex;align-items:center;gap:.6rem;margin:.7rem 0;flex-wrap:wrap;}
+.modifier-row label{margin:0;white-space:nowrap;}.modifier-row input{width:70px;text-align:center;}
+.result-display{text-align:center;padding:1.5rem;border:1px solid #3a2910;background:rgba(0,0,0,.5);margin:.8rem 0;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.result-display::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(200,168,75,.05),transparent 70%);pointer-events:none;}
+.result-die-label{font-family:'Cinzel',serif;font-size:.65rem;font-weight:600;letter-spacing:.2em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:.4rem;}
+.result-number{font-family:'Cinzel Decorative',serif;font-size:4rem;font-weight:700;color:var(--gold-light);line-height:1;text-shadow:0 0 30px rgba(200,168,75,.6);animation:resultPop .3s cubic-bezier(.17,.67,.3,1.5);}
+@keyframes resultPop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.result-nat20{color:#f0e060;text-shadow:0 0 30px rgba(240,224,60,.8);}.result-nat1{color:var(--blood-light);text-shadow:0 0 30px rgba(192,57,43,.8);}
+.result-breakdown{font-family:'Crimson Pro',serif;font-size:.85rem;color:#a89060;margin-top:.3rem;}
+.result-label{font-family:'IM Fell English',serif;font-style:italic;font-size:1.1rem;margin-top:.3rem;}
+.nat20-label{color:#f0d050;}.nat1-label{color:var(--blood-light);}
+.roll-history{max-height:260px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent;}
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:.4rem .6rem;border-bottom:1px solid #1a1008;font-size:.9rem;gap:.5rem;}
+.history-item:last-child{border-bottom:none;}
+.history-die{font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold-dim);min-width:40px;}
+.history-roll{font-family:'Cinzel',serif;font-weight:700;color:var(--parchment);}
+.history-time{font-size:.7rem;color:#5a4020;}
+.history-note{font-family:'IM Fell English',serif;font-style:italic;font-size:.8rem;color:#7a6040;flex:1;text-align:center;}
+/* backup */
+.backup-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+@media(max-width:640px){.backup-grid{grid-template-columns:1fr;}}
+.backup-card{background:var(--panel);border:var(--border-gold);border-radius:var(--radius);padding:1.5rem;position:relative;box-shadow:0 4px 24px rgba(0,0,0,.6);}
+.backup-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}
+.backup-icon{font-size:2rem;margin-bottom:.7rem;display:block;}
+.backup-title{font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;color:var(--gold-light);margin-bottom:.5rem;letter-spacing:.04em;}
+.backup-desc{font-family:'IM Fell English',serif;font-style:italic;font-size:.9rem;color:#a89060;line-height:1.6;margin-bottom:1.2rem;}
+.backup-actions{display:flex;flex-direction:column;gap:.5rem;}
+.status-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:'Cinzel',serif;font-size:.6rem;font-weight:600;letter-spacing:.12em;padding:.3rem .8rem;border-radius:2px;border:1px solid;margin-bottom:.8rem;}
+.status-ok{border-color:#3a6a3a;color:#6aaa6a;background:rgba(45,106,45,.15);}
+.status-warn{border-color:#6a5a2a;color:#c8a84b;background:rgba(106,90,42,.15);}
+.status-err{border-color:#6a2a2a;color:#c84b4b;background:rgba(106,42,42,.15);}
+.drive-setup{margin-top:1.2rem;padding-top:1rem;border-top:1px solid #2a1a08;}
+.backup-stats{font-family:'Cinzel',serif;font-size:.65rem;color:var(--gold-dim);letter-spacing:.1em;}
+.backup-stats span{color:var(--gold);}
+.file-input-wrap{position:relative;overflow:hidden;display:inline-block;}
+.file-input-wrap input[type=file]{position:absolute;left:0;top:0;opacity:0;width:100%;height:100%;cursor:pointer;}
+.restore-preview{background:rgba(0,0,0,.4);border:1px solid #3a2910;border-radius:2px;padding:.8rem;margin-top:.8rem;font-family:'Crimson Pro',serif;font-size:.85rem;color:#a89060;display:none;line-height:1.6;}
+.progress-bar-wrap{margin:.6rem 0;display:none;}
+.progress-bar{height:3px;background:#2a1a08;border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold-dim),var(--gold));transition:width .35s ease;border-radius:2px;}
+/* misc */
+.empty-state{text-align:center;padding:3rem 1rem;color:#5a4020;}
+.empty-state-icon{font-size:2.5rem;margin-bottom:.8rem;opacity:.5;}
+.empty-state p{font-family:'IM Fell English',serif;font-style:italic;font-size:1rem;}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:rgba(20,13,5,.97);border:1px solid var(--gold-dim);color:var(--gold-light);font-family:'Cinzel',serif;font-size:.7rem;font-weight:600;letter-spacing:.1em;padding:.7rem 1.2rem;border-radius:2px;box-shadow:0 4px 20px rgba(0,0,0,.8);z-index:9999;transform:translateY(80px);opacity:0;transition:all .3s ease;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.err{border-color:var(--blood);color:#ff9999;}
+.flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
+.mt{margin-top:1rem;}
+@media(max-width:500px){.stats-row{grid-template-columns:repeat(3,1fr)}.form-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-rune">⚔️</div>
+  <h1>The Chronicles</h1>
+  <p class="subtitle">A Tome for Heroes &amp; Their Tales</p>
+</header>
+<nav id="nav">
+  <button class="nav-btn active" data-tab="characters">Characters</button>
+  <button class="nav-btn" data-tab="journal">Journal</button>
+  <button class="nav-btn" data-tab="dice">Dice Roller</button>
+  <button class="nav-btn" data-tab="backup">Backup &amp; Export</button>
+</nav>
+<main>
+
+<!-- ══ CHARACTERS ══ -->
+<div class="tab-panel active" id="tab-characters">
+  <div class="card">
+    <div class="section-title">Add Character</div>
+    <div class="form-grid">
+      <div class="form-full" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem">
+        <div><label>Name</label><input type="text" id="c-name" placeholder="Aldric Thornveil"/></div>
+        <div><label>Class</label><input type="text" id="c-class" placeholder="Paladin"/></div>
+        <div><label>Race</label><input type="text" id="c-race" placeholder="Half-Elf"/></div>
+      </div>
+      <div class="form-full" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem">
+        <div><label>Level</label><input type="number" id="c-level" min="1" max="20" value="1"/></div>
+        <div><label>Current HP</label><input type="number" id="c-hp" min="0" value="10"/></div>
+        <div><label>Max HP</label><input type="number" id="c-maxhp" min="1" value="10"/></div>
+      </div>
+      <div class="form-full" style="display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem">
+        <div><label>STR</label><input type="number" id="c-str" min="1" max="30" value="10"/></div>
+        <div><label>DEX</label><input type="number" id="c-dex" min="1" max="30" value="10"/></div>
+        <div><label>CON</label><input type="number" id="c-con" min="1" max="30" value="10"/></div>
+        <div><label>INT</label><input type="number" id="c-int" min="1" max="30" value="10"/></div>
+        <div><label>WIS</label><input type="number" id="c-wis" min="1" max="30" value="10"/></div>
+        <div><label>CHA</label><input type="number" id="c-cha" min="1" max="30" value="10"/></div>
+      </div>
+      <div class="form-full"><label>Notes / Backstory</label><textarea id="c-notes" placeholder="Former knight of the Silver Order..."></textarea></div>
+      <div class="form-full"><button class="btn btn-primary" onclick="addCharacter()">✦ Add Character</button></div>
+    </div>
+  </div>
+  <div id="chars-list"></div>
+</div>
+
+<!-- ══ JOURNAL ══ -->
+<div class="tab-panel" id="tab-journal">
+  <div class="card">
+    <div class="section-title">New Entry</div>
+    <div class="form-grid">
+      <div class="form-full" style="display:grid;grid-template-columns:2fr 1fr;gap:.8rem">
+        <div><label>Title</label><input type="text" id="j-title" placeholder="The Night the City Burned"/></div>
+        <div><label>Category</label>
+          <select id="j-tag">
+            <option value="session">Session Log</option>
+            <option value="lore">World Lore</option>
+            <option value="quest">Quest / Hook</option>
+            <option value="npc">NPC Notes</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-full"><label>Entry</label><textarea id="j-body" placeholder="The party arrived at Thornwall as smoke still curled..." style="min-height:130px"></textarea></div>
+      <div class="form-full"><button class="btn btn-primary" onclick="addEntry()">✦ Add Entry</button></div>
+    </div>
+  </div>
+  <div class="flex-between mt">
+    <div class="section-title" style="margin:0;flex:1">All Entries</div>
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+      <button class="btn btn-ghost filter-btn active" onclick="filterEntries(this,'all')">All</button>
+      <button class="btn btn-ghost filter-btn" onclick="filterEntries(this,'session')">Sessions</button>
+      <button class="btn btn-ghost filter-btn" onclick="filterEntries(this,'lore')">Lore</button>
+      <button class="btn btn-ghost filter-btn" onclick="filterEntries(this,'quest')">Quests</button>
+      <button class="btn btn-ghost filter-btn" onclick="filterEntries(this,'npc')">NPCs</button>
+    </div>
+  </div>
+  <div id="journal-list" class="mt"></div>
+</div>
+
+<!-- ══ DICE ══ -->
+<div class="tab-panel" id="tab-dice">
+  <div class="dice-section">
+    <div class="card">
+      <div class="section-title">Roll Dice</div>
+      <div class="dice-pad">
+        <button class="die-btn" onclick="rollDie(4,this)"><span class="die-icon">🔷</span><span class="die-label">d4</span></button>
+        <button class="die-btn" onclick="rollDie(6,this)"><span class="die-icon">🎲</span><span class="die-label">d6</span></button>
+        <button class="die-btn" onclick="rollDie(8,this)"><span class="die-icon">🔶</span><span class="die-label">d8</span></button>
+        <button class="die-btn" onclick="rollDie(10,this)"><span class="die-icon">🔸</span><span class="die-label">d10</span></button>
+        <button class="die-btn" onclick="rollDie(12,this)"><span class="die-icon">🔹</span><span class="die-label">d12</span></button>
+        <button class="die-btn" onclick="rollDie(20,this)"><span class="die-icon">⭐</span><span class="die-label">d20</span></button>
+        <button class="die-btn" onclick="rollDie(100,this)"><span class="die-icon">💫</span><span class="die-label">d100</span></button>
+        <button class="die-btn" onclick="rollCustom(this)"><span class="die-icon">✨</span><span class="die-label">Custom</span></button>
+      </div>
+      <div class="modifier-row">
+        <label>Modifier</label>
+        <input type="number" id="dice-mod" value="0" style="width:70px;text-align:center"/>
+        <label>Count</label>
+        <input type="number" id="dice-count" value="1" min="1" max="20" style="width:70px;text-align:center"/>
+        <label>Custom d</label>
+        <input type="number" id="dice-custom" value="6" min="2" max="1000" style="width:80px;text-align:center"/>
+      </div>
+      <div class="result-display" id="dice-result">
+        <div class="result-die-label">Choose a die to roll</div>
+        <div class="result-number" style="font-size:2rem;opacity:.3">—</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Roll History</div>
+      <div class="roll-history" id="roll-history">
+        <div class="empty-state" style="padding:2rem"><p>No rolls yet this session</p></div>
+      </div>
+      <div style="margin-top:.8rem"><button class="btn btn-ghost" onclick="clearHistory()">Clear History</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BACKUP & EXPORT ══ -->
+<div class="tab-panel" id="tab-backup">
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="section-title">Chronicle Contents</div>
+    <div class="backup-stats" id="backup-stats">Open this tab to see stats</div>
+  </div>
+  <div class="backup-grid">
+
+    <!-- PDF -->
+    <div class="backup-card">
+      <span class="backup-icon">📄</span>
+      <div class="backup-title">Export to PDF</div>
+      <div class="backup-desc">Generate a formatted PDF with all characters and journal entries — perfect for printing or sharing with your party.</div>
+      <div class="backup-actions">
+        <button class="btn btn-pdf" onclick="exportPDF()">📄 Download PDF</button>
+        <div class="progress-bar-wrap" id="pdf-progress">
+          <div class="progress-bar"><div class="progress-fill" id="pdf-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JSON -->
+    <div class="backup-card">
+      <span class="backup-icon">💾</span>
+      <div class="backup-title">JSON Backup &amp; Restore</div>
+      <div class="backup-desc">Download a complete backup of all your data. Restore it at any time — no account or setup needed.</div>
+      <div class="backup-actions">
+        <button class="btn btn-ghost" onclick="downloadJSON()">⬇ Download Backup</button>
+        <div class="file-input-wrap">
+          <button class="btn btn-ghost">⬆ Restore from File</button>
+          <input type="file" accept=".json" onchange="restoreJSON(event)"/>
+        </div>
+        <div class="restore-preview" id="restore-preview"></div>
+      </div>
+    </div>
+
+    <!-- Google Drive -->
+    <div class="backup-card" style="grid-column:1/-1">
+      <span class="backup-icon">🔵</span>
+      <div class="backup-title">Google Drive Backup</div>
+      <div class="backup-desc">Upload your Chronicle backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
+      <div id="drive-status-wrap"></div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem">
+        <button class="btn btn-drive" id="drive-backup-btn" onclick="driveBackup()" disabled>🔵 Backup to Drive</button>
+        <button class="btn btn-ghost" id="drive-signout-btn" onclick="driveSignOut()" style="display:none">Sign Out</button>
+      </div>
+      <div class="drive-setup">
+        <div class="section-title" style="margin-bottom:.8rem">Google OAuth Setup</div>
+        <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:.88rem;color:#a89060;line-height:1.7;margin-bottom:.9rem">
+          <strong style="color:var(--gold-dim);font-style:normal">One-time setup:</strong> Visit <strong style="color:var(--gold-dim);font-style:normal">console.cloud.google.com</strong> → New Project → APIs &amp; Services → Credentials → Create OAuth 2.0 Client ID (Web Application). Add your page's URL to <em>Authorised JavaScript Origins</em>. Copy the Client ID and paste it below.
+        </p>
+        <label>OAuth Client ID</label>
+        <input type="text" id="drive-client-id" placeholder="xxxxxxxxxx-xxxx.apps.googleusercontent.com" oninput="saveClientId()"/>
+        <div style="margin-top:.7rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="initDrive()">✓ Connect to Drive</button>
+          <span id="drive-connect-status" style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--gold-dim);letter-spacing:.1em"></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+let characters=[], journal=[], rollHistory=[], journalFilter='all';
+let driveAccessToken=null;
+let driveClientId=localStorage.getItem('chronicle_client_id')||'';
+
+// ── Nav ──
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='backup') updateBackupStats();
+  });
+});
+
+// ── Toast ──
+function toast(msg,isErr=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.toggle('err',isErr);
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ── Helpers ──
+function mod(s){const m=Math.floor((s-10)/2);return(m>=0?'+':'')+m;}
+
+// ── Characters ──
+function addCharacter(){
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){toast('⚠ Name is required',true);return;}
+  characters.unshift({
+    id:Date.now(),name,
+    cls:document.getElementById('c-class').value.trim()||'—',
+    race:document.getElementById('c-race').value.trim()||'—',
+    level:parseInt(document.getElementById('c-level').value)||1,
+    hp:parseInt(document.getElementById('c-hp').value)||10,
+    maxhp:parseInt(document.getElementById('c-maxhp').value)||10,
+    str:parseInt(document.getElementById('c-str').value)||10,
+    dex:parseInt(document.getElementById('c-dex').value)||10,
+    con:parseInt(document.getElementById('c-con').value)||10,
+    int:parseInt(document.getElementById('c-int').value)||10,
+    wis:parseInt(document.getElementById('c-wis').value)||10,
+    cha:parseInt(document.getElementById('c-cha').value)||10,
+    notes:document.getElementById('c-notes').value.trim(),
+    expanded:false
+  });
+  renderChars();
+  ['c-name','c-class','c-race','c-notes'].forEach(id=>document.getElementById(id).value='');
+  ['c-level','c-hp','c-maxhp','c-str','c-dex','c-con','c-int','c-wis','c-cha'].forEach(id=>document.getElementById(id).value=id==='c-level'?1:10);
+  toast('✦ Character added to the Chronicles');
+}
+function deleteCharacter(id){characters=characters.filter(c=>c.id!==id);renderChars();}
+function toggleChar(id){const c=characters.find(c=>c.id===id);if(c)c.expanded=!c.expanded;renderChars();}
+function updateHP(id,delta){
+  const c=characters.find(c=>c.id===id);if(!c)return;
+  const v=parseInt(document.getElementById('hp-input-'+id).value)||0;
+  c.hp=Math.max(0,Math.min(c.maxhp,c.hp+v*delta));
+  renderChars();
+}
+function renderChars(){
+  const el=document.getElementById('chars-list');
+  if(!characters.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚔️</div><p>No characters yet. Add your first hero above.</p></div>`;return;}
+  el.innerHTML=`<div class="chars-grid">${characters.map(c=>{
+    const p=Math.max(0,Math.min(100,(c.hp/c.maxhp)*100));
+    const stats=[{k:'STR',v:c.str},{k:'DEX',v:c.dex},{k:'CON',v:c.con},{k:'INT',v:c.int},{k:'WIS',v:c.wis},{k:'CHA',v:c.cha}];
+    return`<div class="char-card ${c.expanded?'expanded':''}" onclick="toggleChar(${c.id})">
+      <div class="char-header">
+        <div><div class="char-name">${c.name}</div><div class="char-meta">Lvl ${c.level} ${c.race} ${c.cls}</div></div>
+        <div class="char-badge">${c.expanded?'Close':'View'}</div>
+      </div>
+      ${c.expanded?`<div class="char-body" onclick="event.stopPropagation()">
+        <div class="stats-row">${stats.map(s=>`<div class="stat-box"><span class="stat-label">${s.k}</span><span class="stat-val">${s.v}</span><span class="stat-mod">${mod(s.v)}</span></div>`).join('')}</div>
+        <div class="hp-bar-wrap"><div class="hp-label"><span>Hit Points</span><span>${c.hp}/${c.maxhp}</span></div><div class="hp-bar"><div class="hp-fill" style="width:${p}%"></div></div></div>
+        <div class="hp-editor">
+          <input type="number" id="hp-input-${c.id}" value="1" min="1" onclick="event.stopPropagation()"/>
+          <button class="btn btn-ghost" onclick="updateHP(${c.id},1);event.stopPropagation()">Heal +</button>
+          <button class="btn btn-danger" onclick="updateHP(${c.id},-1);event.stopPropagation()">Dmg −</button>
+        </div>
+        ${c.notes?`<div class="char-notes">${c.notes}</div>`:''}
+        <div class="char-actions"><button class="btn btn-danger" onclick="deleteCharacter(${c.id});event.stopPropagation()">✕ Remove</button></div>
+      </div>`:`<div class="char-body"><div class="hp-bar"><div class="hp-fill" style="width:${p}%"></div></div><div style="font-size:.8rem;color:var(--gold-dim);font-family:'Cinzel',serif;margin-top:.4rem">${c.hp}/${c.maxhp} HP</div></div>`}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── Journal ──
+const tagLabel={session:'Session Log',lore:'World Lore',quest:'Quest / Hook',npc:'NPC Notes',other:'Other'};
+function addEntry(){
+  const title=document.getElementById('j-title').value.trim();
+  const body=document.getElementById('j-body').value.trim();
+  if(!title||!body){toast('⚠ Title and entry are required',true);return;}
+  journal.unshift({id:Date.now(),title,body,tag:document.getElementById('j-tag').value,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});
+  renderJournal();
+  document.getElementById('j-title').value='';document.getElementById('j-body').value='';
+  toast('✦ Entry written to the Chronicles');
+}
+function deleteEntry(id){journal=journal.filter(e=>e.id!==id);renderJournal();}
+function filterEntries(btn,filter){
+  journalFilter=filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderJournal();
+}
+function renderJournal(){
+  const el=document.getElementById('journal-list');
+  const entries=journalFilter==='all'?journal:journal.filter(e=>e.tag===journalFilter);
+  if(!entries.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📜</div><p>${journal.length?'No entries match this filter.':'The Chronicle awaits your first entry.'}</p></div>`;return;}
+  el.innerHTML=entries.map(e=>`<div class="journal-entry">
+    <div class="entry-header">
+      <div><span class="entry-tag tag-${e.tag}">${tagLabel[e.tag]}</span><div class="entry-title" style="margin-top:.3rem">${e.title}</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
+        <span class="entry-meta">${e.date}</span>
+        <button class="btn btn-danger" onclick="deleteEntry(${e.id})">✕</button>
+      </div>
+    </div>
+    <div class="entry-body">${e.body}</div>
+  </div>`).join('');
+}
+
+// ── Dice ──
+function rollDie(sides,btn){
+  const count=Math.max(1,Math.min(20,parseInt(document.getElementById('dice-count').value)||1));
+  const modifier=parseInt(document.getElementById('dice-mod').value)||0;
+  btn.classList.add('rolling'); setTimeout(()=>btn.classList.remove('rolling'),450);
+  let rolls=[];
+  for(let i=0;i<count;i++) rolls.push(Math.floor(Math.random()*sides)+1);
+  const raw=rolls.reduce((a,b)=>a+b,0), total=raw+modifier;
+  displayResult(sides,count,rolls,raw,total,modifier);
+  addToHistory(`${count}d${sides}`,total,modifier,rolls);
+}
+function rollCustom(btn){rollDie(parseInt(document.getElementById('dice-custom').value)||6,btn);}
+function displayResult(sides,count,rolls,raw,total,modifier){
+  const el=document.getElementById('dice-result');
+  const isN20=sides===20&&count===1&&rolls[0]===20, isN1=sides===20&&count===1&&rolls[0]===1;
+  const nc=isN20?'result-nat20':isN1?'result-nat1':'';
+  const lbl=isN20?'<div class="result-label nat20-label">✨ Natural 20!</div>':isN1?'<div class="result-label nat1-label">💀 Natural 1...</div>':'';
+  let bd='';
+  if(count>1||modifier!==0){
+    bd=`<div class="result-breakdown">${count>1?`[${rolls.join(' + ')}]`:''}${modifier!==0?` ${modifier>=0?'+':''}${modifier}`:''} = ${total}</div>`;
+  }
+  el.innerHTML=`<div class="result-die-label">${count}d${sides}${modifier!==0?(modifier>0?'+':'')+modifier:''}</div><div class="result-number ${nc}">${total}</div>${bd}${lbl}`;
+}
+function addToHistory(die,total,modifier,rolls){
+  rollHistory.unshift({die,total,modifier,rolls,time:new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})});
+  if(rollHistory.length>60)rollHistory.pop(); renderHistory();
+}
+function clearHistory(){rollHistory=[];renderHistory();}
+function renderHistory(){
+  const el=document.getElementById('roll-history');
+  if(!rollHistory.length){el.innerHTML=`<div class="empty-state" style="padding:2rem"><p>No rolls yet this session</p></div>`;return;}
+  el.innerHTML=rollHistory.map(r=>`<div class="history-item">
+    <span class="history-die">${r.die}</span>
+    <span class="history-roll">${r.total}</span>
+    <span class="history-note">${r.rolls.length>1?'['+r.rolls.join(',')+']':''}${r.modifier!==0?(r.modifier>0?'+':'')+r.modifier:''}</span>
+    <span class="history-time">${r.time}</span>
+  </div>`).join('');
+}
+
+// ── Backup Stats ──
+function updateBackupStats(){
+  document.getElementById('backup-stats').innerHTML=
+    `Characters: <span>${characters.length}</span> &nbsp;·&nbsp; Journal Entries: <span>${journal.length}</span> &nbsp;·&nbsp; Roll History: <span>${rollHistory.length}</span> rolls`;
+}
+
+// ── JSON Backup ──
+function getBackupData(){return{version:1,exportedAt:new Date().toISOString(),characters,journal,rollHistory};}
+function downloadJSON(){
+  if(!characters.length&&!journal.length){toast('⚠ Nothing to back up yet!',true);return;}
+  const blob=new Blob([JSON.stringify(getBackupData(),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`chronicle-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('✦ Backup downloaded');
+}
+function restoreJSON(e){
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.version||!Array.isArray(data.characters))throw new Error('bad');
+      characters=data.characters||[]; journal=data.journal||[]; rollHistory=data.rollHistory||[];
+      renderChars(); renderJournal(); renderHistory(); updateBackupStats();
+      const p=document.getElementById('restore-preview');
+      p.style.display='block';
+      p.innerHTML=`✦ Restored: ${characters.length} characters, ${journal.length} journal entries, ${rollHistory.length} rolls.<br><em style="color:#7a6428;font-size:.8rem">Exported ${new Date(data.exportedAt).toLocaleString()}</em>`;
+      toast('✦ Chronicle restored from backup');
+    }catch{toast('⚠ Invalid backup file',true);}
+  };
+  reader.readAsText(file); e.target.value='';
+}
+
+// ── PDF Export ──
+async function exportPDF(){
+  if(!characters.length&&!journal.length){toast('⚠ Nothing to export yet!',true);return;}
+  const progress=document.getElementById('pdf-progress'), bar=document.getElementById('pdf-bar');
+  progress.style.display='block'; bar.style.width='10%';
+  await new Promise(r=>setTimeout(r,50));
+
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210, M=18, CW=W-M*2;
+  let y=0;
+
+  function drawBg(){
+    doc.setFillColor(26,20,16); doc.rect(0,0,W,297,'F');
+    doc.setDrawColor(200,168,75); doc.setLineWidth(0.3); doc.rect(8,8,W-16,281,'S');
+    doc.setDrawColor(100,80,32); doc.setLineWidth(0.1); doc.rect(10,10,W-20,277,'S');
+  }
+  function checkPage(need=10){
+    if(y+need>272){doc.addPage();y=M;drawBg();}
+  }
+
+  // Title page
+  drawBg(); y=72;
+  doc.setFont('times','bolditalic'); doc.setFontSize(34); doc.setTextColor(232,201,106);
+  doc.text('The Chronicles',W/2,y,{align:'center'}); y+=12;
+  doc.setFont('times','italic'); doc.setFontSize(12); doc.setTextColor(120,96,38);
+  doc.text('A Tome for Heroes & Their Tales',W/2,y,{align:'center'}); y+=20;
+  doc.setDrawColor(200,168,75); doc.setLineWidth(0.4);
+  doc.line(M+15,y,W-M-15,y); y+=12;
+  doc.setFont('times','normal'); doc.setFontSize(11); doc.setTextColor(180,160,100);
+  doc.text(`${characters.length} Character${characters.length!==1?'s':''} · ${journal.length} Journal Entr${journal.length!==1?'ies':'y'}`,W/2,y,{align:'center'}); y+=8;
+  doc.setFontSize(9); doc.setTextColor(80,62,28);
+  doc.text(`Exported ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`,W/2,y,{align:'center'});
+  bar.style.width='25%';
+
+  // Characters section
+  if(characters.length){
+    doc.addPage(); drawBg(); y=M;
+    doc.setFont('times','bold'); doc.setFontSize(20); doc.setTextColor(232,201,106);
+    doc.text('Characters',W/2,y+7,{align:'center'}); y+=14;
+    doc.setDrawColor(200,168,75); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=8;
+
+    characters.forEach((c,ci)=>{
+      checkPage(60);
+      // header block
+      doc.setFillColor(35,22,8); doc.rect(M,y,CW,13,'F');
+      doc.setFont('times','bold'); doc.setFontSize(14); doc.setTextColor(232,201,106);
+      doc.text(c.name,M+4,y+8.5);
+      doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(120,96,38);
+      doc.text(`Lvl ${c.level} ${c.race} ${c.cls}`,M+4,y+12.5);
+      doc.setFont('times','bold'); doc.setFontSize(9); doc.setTextColor(200,168,75);
+      doc.text(`HP ${c.hp}/${c.maxhp}`,W-M-3,y+10,{align:'right'});
+      y+=16;
+
+      // ability scores
+      const stats=[{k:'STR',v:c.str},{k:'DEX',v:c.dex},{k:'CON',v:c.con},{k:'INT',v:c.int},{k:'WIS',v:c.wis},{k:'CHA',v:c.cha}];
+      const bw=CW/6;
+      stats.forEach((s,i)=>{
+        const bx=M+i*bw;
+        doc.setFillColor(18,11,4); doc.rect(bx,y,bw-0.8,16,'F');
+        doc.setDrawColor(55,38,14); doc.setLineWidth(0.2); doc.rect(bx,y,bw-0.8,16,'S');
+        doc.setFont('times','bold'); doc.setFontSize(6.5); doc.setTextColor(110,86,30);
+        doc.text(s.k,bx+bw/2-0.5,y+4.8,{align:'center'});
+        doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(245,237,216);
+        doc.text(String(s.v),bx+bw/2-0.5,y+11.5,{align:'center'});
+        doc.setFont('times','normal'); doc.setFontSize(7); doc.setTextColor(110,86,30);
+        doc.text(mod(s.v),bx+bw/2-0.5,y+15.2,{align:'center'});
+      });
+      y+=20;
+
+      // notes
+      if(c.notes){
+        checkPage(16);
+        doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(160,136,88);
+        doc.splitTextToSize(c.notes,CW-6).forEach(line=>{checkPage(5);doc.text(line,M+3,y);y+=4.5;});
+        y+=3;
+      }
+      if(ci<characters.length-1){checkPage(6);doc.setDrawColor(50,34,12);doc.setLineWidth(0.1);doc.line(M+10,y,W-M-10,y);y+=8;}
+    });
+  }
+  bar.style.width='60%';
+
+  // Journal section
+  if(journal.length){
+    doc.addPage(); drawBg(); y=M;
+    doc.setFont('times','bold'); doc.setFontSize(20); doc.setTextColor(232,201,106);
+    doc.text('Journal',W/2,y+7,{align:'center'}); y+=14;
+    doc.setDrawColor(200,168,75); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=8;
+
+    const tc={session:[85,115,55],lore:[55,85,115],quest:[115,85,40],npc:[100,55,100],other:[60,60,60]};
+    journal.forEach((e,ei)=>{
+      checkPage(32);
+      const c=tc[e.tag]||tc.other;
+      doc.setFillColor(...c); doc.roundedRect(M,y,30,5.5,1,1,'F');
+      doc.setFont('times','bold'); doc.setFontSize(6); doc.setTextColor(245,237,216);
+      doc.text(tagLabel[e.tag].toUpperCase(),M+15,y+3.8,{align:'center'});
+      doc.setFontSize(8); doc.setTextColor(80,62,28);
+      doc.text(e.date,W-M,y+4,{align:'right'});
+      y+=8;
+      doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(232,201,106);
+      doc.text(e.title,M,y); y+=7;
+      doc.setFont('times','italic'); doc.setFontSize(9.5); doc.setTextColor(195,178,132);
+      doc.splitTextToSize(e.body,CW-4).forEach(line=>{checkPage(5);doc.text(line,M+2,y);y+=4.8;});
+      y+=5;
+      if(ei<journal.length-1){checkPage(5);doc.setDrawColor(42,26,8);doc.setLineWidth(0.1);doc.line(M+12,y-2,W-M-12,y-2);y+=5;}
+    });
+  }
+  bar.style.width='95%';
+  await new Promise(r=>setTimeout(r,100));
+  doc.save(`chronicle-${new Date().toISOString().slice(0,10)}.pdf`);
+  bar.style.width='100%';
+  setTimeout(()=>{progress.style.display='none';bar.style.width='0';},900);
+  toast('✦ PDF exported');
+}
+
+// ── Google Drive ──
+function saveClientId(){
+  driveClientId=document.getElementById('drive-client-id').value.trim();
+  localStorage.setItem('chronicle_client_id',driveClientId);
+}
+function setDriveStatus(type,msg){
+  const map={ok:'status-ok',warn:'status-warn',err:'status-err'};
+  document.getElementById('drive-status-wrap').innerHTML=`<div class="status-badge ${map[type]||'status-warn'}">${msg}</div>`;
+}
+function initDrive(){
+  const id=document.getElementById('drive-client-id').value.trim()||driveClientId;
+  if(!id){toast('⚠ Paste your Client ID first',true);return;}
+  driveClientId=id; localStorage.setItem('chronicle_client_id',id);
+  if(!window.google||!window.google.accounts){
+    setDriveStatus('err','✗ Google library not loaded — check your internet connection');
+    return;
+  }
+  const statusEl=document.getElementById('drive-connect-status');
+  statusEl.textContent='Connecting…';
+  try{
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:id,
+      scope:'https://www.googleapis.com/auth/drive.file',
+      callback:(resp)=>{
+        if(resp.error){
+          setDriveStatus('err','✗ Auth failed: '+resp.error);
+          statusEl.textContent=''; toast('⚠ Auth failed: '+resp.error,true); return;
+        }
+        driveAccessToken=resp.access_token;
+        setDriveStatus('ok','✓ Connected to Google Drive');
+        document.getElementById('drive-backup-btn').disabled=false;
+        document.getElementById('drive-signout-btn').style.display='inline-block';
+        statusEl.textContent='Connected ✓';
+        toast('✦ Google Drive connected');
+      }
+    });
+    tc.requestAccessToken({prompt:'consent'});
+  }catch(e){
+    setDriveStatus('err','✗ Invalid Client ID or domain not authorised');
+    statusEl.textContent='';
+  }
+}
+function driveSignOut(){
+  if(driveAccessToken) google.accounts.oauth2.revoke(driveAccessToken);
+  driveAccessToken=null;
+  document.getElementById('drive-backup-btn').disabled=true;
+  document.getElementById('drive-signout-btn').style.display='none';
+  setDriveStatus('warn','○ Not connected');
+  toast('Signed out of Google Drive');
+}
+async function driveBackup(){
+  if(!driveAccessToken){toast('⚠ Connect to Google Drive first',true);return;}
+  if(!characters.length&&!journal.length){toast('⚠ Nothing to back up yet!',true);return;}
+  const btn=document.getElementById('drive-backup-btn');
+  btn.disabled=true; btn.textContent='⏳ Uploading…';
+  const filename=`chronicle-backup-${new Date().toISOString().slice(0,10)}.json`;
+  const content=JSON.stringify(getBackupData(),null,2);
+  const boundary='--------ChronicleBackupBoundary314159';
+  const body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:filename,mimeType:'application/json'})}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
+  try{
+    const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+driveAccessToken,'Content-Type':`multipart/related; boundary="${boundary}"`},
+      body
+    });
+    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||res.statusText);}
+    toast(`✦ Backed up to Drive: ${filename}`);
+    setDriveStatus('ok',`✓ Last backup: ${new Date().toLocaleTimeString()}`);
+  }catch(e){
+    toast('⚠ Upload failed: '+e.message,true);
+    setDriveStatus('err','✗ Upload failed — token may have expired, reconnect');
+  }finally{
+    btn.disabled=false; btn.textContent='🔵 Backup to Drive';
+  }
+}
+
+// ── Init ──
+renderChars(); renderJournal(); renderHistory();
+if(driveClientId) document.getElementById('drive-client-id').value=driveClientId;
+setDriveStatus('warn','○ Not connected — paste your Client ID and click Connect');
+</script>
+</body>
+</html>
