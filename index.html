@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>The Chronicles — A TTRPG Journal Keeping</title>
+<title>The Chronicle — TTRPG Journal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -153,7 +153,7 @@ select option{background:#1a0d05;}
 <body>
 <header>
   <div class="logo-rune">⚔️</div>
-  <h1>The Chronicles</h1>
+  <h1>The Chronicle</h1>
   <p class="subtitle">A Tome for Heroes &amp; Their Tales</p>
 </header>
 <nav id="nav">
@@ -179,13 +179,46 @@ select option{background:#1a0d05;}
         <div><label>Current HP</label><input type="number" id="c-hp" min="0" value="10"/></div>
         <div><label>Max HP</label><input type="number" id="c-maxhp" min="1" value="10"/></div>
       </div>
-      <div class="form-full" style="display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem">
-        <div><label>STR</label><input type="number" id="c-str" min="1" max="30" value="10"/></div>
-        <div><label>DEX</label><input type="number" id="c-dex" min="1" max="30" value="10"/></div>
-        <div><label>CON</label><input type="number" id="c-con" min="1" max="30" value="10"/></div>
-        <div><label>INT</label><input type="number" id="c-int" min="1" max="30" value="10"/></div>
-        <div><label>WIS</label><input type="number" id="c-wis" min="1" max="30" value="10"/></div>
-        <div><label>CHA</label><input type="number" id="c-cha" min="1" max="30" value="10"/></div>
+      <div class="form-full">
+        <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:.82rem;color:#7a6428;margin-bottom:.7rem">
+          Enter stat names, values, and modifiers for your system. Leave modifier blank if unused.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem" id="stats-form-grid">
+          <div>
+            <input type="text" id="c-sname-0" value="STR" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
+            <input type="number" id="c-sval-0" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
+            <input type="text"   id="c-smod-0" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+          </div>
+          <div>
+            <input type="text" id="c-sname-1" value="DEX" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
+            <input type="number" id="c-sval-1" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
+            <input type="text"   id="c-smod-1" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+          </div>
+          <div>
+            <input type="text" id="c-sname-2" value="CON" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
+            <input type="number" id="c-sval-2" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
+            <input type="text"   id="c-smod-2" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+          </div>
+          <div>
+            <input type="text" id="c-sname-3" value="INT" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
+            <input type="number" id="c-sval-3" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
+            <input type="text"   id="c-smod-3" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+          </div>
+          <div>
+            <input type="text" id="c-sname-4" value="WIS" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
+            <input type="number" id="c-sval-4" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
+            <input type="text"   id="c-smod-4" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+          </div>
+          <div>
+            <input type="text" id="c-sname-5" value="CHA" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
+            <input type="number" id="c-sval-5" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
+            <input type="text"   id="c-smod-5" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+          </div>
+        </div>
+        <div style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost" onclick="addStatField()" style="font-size:.6rem">+ Add Stat</button>
+          <button class="btn btn-ghost" onclick="removeStatField()" style="font-size:.6rem">− Remove Last</button>
+        </div>
       </div>
       <div class="form-full"><label>Notes / Backstory</label><textarea id="c-notes" placeholder="Former knight of the Silver Order..."></textarea></div>
       <div class="form-full"><button class="btn btn-primary" onclick="addCharacter()">✦ Add Character</button></div>
@@ -357,54 +390,214 @@ function toast(msg,isErr=false){
 }
 
 // ── Helpers ──
-function mod(s){const m=Math.floor((s-10)/2);return(m>=0?'+':'')+m;}
+let statFieldCount = 6;
+
+function getStatCount() {
+  return document.querySelectorAll('#stats-form-grid > div').length;
+}
+
+function addStatField() {
+  const grid = document.getElementById('stats-form-grid');
+  const i = getStatCount();
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <input type="text"   id="c-sname-${i}" placeholder="Stat"   style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem;width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);padding:.4rem .5rem;outline:none;border-radius:2px"/>
+    <input type="number" id="c-sval-${i}" placeholder="Val" value="10" style="text-align:center;width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:1rem;padding:.4rem .5rem;outline:none;border-radius:2px;margin-bottom:.2rem"/>
+    <input type="text"   id="c-smod-${i}" placeholder="Mod"   style="text-align:center;font-size:.85rem;width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;padding:.4rem .5rem;outline:none;border-radius:2px"/>`;
+  grid.appendChild(div);
+}
+
+function removeStatField() {
+  const grid = document.getElementById('stats-form-grid');
+  if (grid.children.length > 1) grid.removeChild(grid.lastElementChild);
+}
 
 // ── Characters ──
 function addCharacter(){
   const name=document.getElementById('c-name').value.trim();
   if(!name){toast('⚠ Name is required',true);return;}
+  const n = getStatCount();
+  const stats = [];
+  for (let i = 0; i < n; i++) {
+    const sname = (document.getElementById(`c-sname-${i}`)?.value||'').trim();
+    const sval  = document.getElementById(`c-sval-${i}`)?.value||'';
+    const smod  = (document.getElementById(`c-smod-${i}`)?.value||'').trim();
+    if (sname) stats.push({ name: sname, val: sval, mod: smod });
+  }
   characters.unshift({
     id:Date.now(),name,
     cls:document.getElementById('c-class').value.trim()||'—',
     race:document.getElementById('c-race').value.trim()||'—',
-    level:parseInt(document.getElementById('c-level').value)||1,
+    level:document.getElementById('c-level').value.trim()||'1',
     hp:parseInt(document.getElementById('c-hp').value)||10,
     maxhp:parseInt(document.getElementById('c-maxhp').value)||10,
-    str:parseInt(document.getElementById('c-str').value)||10,
-    dex:parseInt(document.getElementById('c-dex').value)||10,
-    con:parseInt(document.getElementById('c-con').value)||10,
-    int:parseInt(document.getElementById('c-int').value)||10,
-    wis:parseInt(document.getElementById('c-wis').value)||10,
-    cha:parseInt(document.getElementById('c-cha').value)||10,
+    stats,
     notes:document.getElementById('c-notes').value.trim(),
     expanded:false
   });
   renderChars();
   ['c-name','c-class','c-race','c-notes'].forEach(id=>document.getElementById(id).value='');
-  ['c-level','c-hp','c-maxhp','c-str','c-dex','c-con','c-int','c-wis','c-cha'].forEach(id=>document.getElementById(id).value=id==='c-level'?1:10);
-  toast('✦ Character added to the Chronicles');
+  document.getElementById('c-level').value='1';
+  document.getElementById('c-hp').value=10;
+  document.getElementById('c-maxhp').value=10;
+  for(let i=0;i<getStatCount();i++){
+    const v=document.getElementById(`c-sval-${i}`);
+    const m=document.getElementById(`c-smod-${i}`);
+    if(v) v.value=10; if(m) m.value='';
+  }
+  toast('✦ Character added to the Chronicle');
 }
 function deleteCharacter(id){characters=characters.filter(c=>c.id!==id);renderChars();}
-function toggleChar(id){const c=characters.find(c=>c.id===id);if(c)c.expanded=!c.expanded;renderChars();}
+function toggleChar(id){
+  const c=characters.find(c=>c.id===id);
+  if(!c) return;
+  if(c.editing) return; // don't collapse while editing
+  c.expanded=!c.expanded;
+  renderChars();
+}
+function toggleEdit(id){
+  const c=characters.find(c=>c.id===id);
+  if(!c) return;
+  c.editing=!c.editing;
+  if(c.editing) c.expanded=true;
+  renderChars();
+}
+function saveEdit(id){
+  const c=characters.find(c=>c.id===id);
+  if(!c) return;
+  c.name    = document.getElementById(`e-name-${id}`).value.trim() || c.name;
+  c.cls     = document.getElementById(`e-cls-${id}`).value.trim()  || '—';
+  c.race    = document.getElementById(`e-race-${id}`).value.trim() || '—';
+  c.level   = document.getElementById(`e-level-${id}`).value.trim()|| c.level;
+  c.maxhp   = parseInt(document.getElementById(`e-maxhp-${id}`).value)||c.maxhp;
+  c.hp      = Math.min(c.hp, c.maxhp);
+  c.notes   = document.getElementById(`e-notes-${id}`).value.trim();
+  // re-read stats
+  const grid = document.getElementById(`e-stats-${id}`);
+  const rows  = grid ? grid.querySelectorAll('.edit-stat-row') : [];
+  const stats = [];
+  rows.forEach(row=>{
+    const sname = row.querySelector('.esn')?.value.trim();
+    const sval  = row.querySelector('.esv')?.value??'';
+    const smod  = row.querySelector('.esm')?.value.trim()??'';
+    if(sname) stats.push({name:sname, val:sval, mod:smod});
+  });
+  c.stats  = stats;
+  c.editing = false;
+  renderChars();
+  toast('✦ Character updated');
+}
+function addEditStat(id){
+  const grid=document.getElementById(`e-stats-${id}`);
+  if(!grid) return;
+  const row=document.createElement('div');
+  row.className='edit-stat-row';
+  row.style.cssText='display:grid;grid-template-columns:2fr 1.5fr 1.5fr;gap:.3rem;margin-bottom:.3rem;';
+  row.innerHTML=`
+    <input class="esn" type="text"   placeholder="Name"  style="${editInputStyle('Cinzel','.7rem')}text-transform:uppercase;"/>
+    <input class="esv" type="number" placeholder="Val"   style="${editInputStyle('Crimson Pro','1rem')}text-align:center;"/>
+    <input class="esm" type="text"   placeholder="Mod"   style="${editInputStyle('Crimson Pro','.9rem')}text-align:center;"/>`;
+  grid.appendChild(row);
+}
+function removeEditStat(id){
+  const grid=document.getElementById(`e-stats-${id}`);
+  if(grid && grid.children.length>0) grid.removeChild(grid.lastElementChild);
+}
+function editInputStyle(font,size){
+  return `width:100%;background:rgba(10,6,2,.9);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'${font}',serif;font-size:${size};padding:.35rem .5rem;outline:none;border-radius:2px;`;
+}
+
 function updateHP(id,delta){
   const c=characters.find(c=>c.id===id);if(!c)return;
   const v=parseInt(document.getElementById('hp-input-'+id).value)||0;
   c.hp=Math.max(0,Math.min(c.maxhp,c.hp+v*delta));
   renderChars();
 }
+
 function renderChars(){
   const el=document.getElementById('chars-list');
-  if(!characters.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚔️</div><p>No characters yet. Add your first hero above.</p></div>`;return;}
+  if(!characters.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚔️</div><p>No characters yet. Add your first hero above.</p></div>`;
+    return;
+  }
   el.innerHTML=`<div class="chars-grid">${characters.map(c=>{
     const p=Math.max(0,Math.min(100,(c.hp/c.maxhp)*100));
-    const stats=[{k:'STR',v:c.str},{k:'DEX',v:c.dex},{k:'CON',v:c.con},{k:'INT',v:c.int},{k:'WIS',v:c.wis},{k:'CHA',v:c.cha}];
+    const stats=c.stats||[];
+    const cols=Math.min(6,Math.max(3,stats.length));
+
+    // ── EDIT MODE ──
+    if(c.editing){
+      const statRows = stats.length
+        ? stats.map(s=>`<div class="edit-stat-row" style="display:grid;grid-template-columns:2fr 1.5fr 1.5fr;gap:.3rem;margin-bottom:.3rem;">
+            <input class="esn" type="text"   value="${s.name}" style="${editInputStyle('Cinzel','.7rem')}text-transform:uppercase;"/>
+            <input class="esv" type="number" value="${s.val}"  style="${editInputStyle('Crimson Pro','1rem')}text-align:center;"/>
+            <input class="esm" type="text"   value="${s.mod}"  style="${editInputStyle('Crimson Pro','.9rem')}text-align:center;"/>
+          </div>`).join('')
+        : '';
+      return`<div class="char-card expanded" style="border-color:var(--gold);">
+        <div class="char-header" style="background:linear-gradient(135deg,rgba(60,40,10,.9),rgba(30,18,5,.95));">
+          <div><div class="char-name" style="color:var(--gold-light)">Editing: ${c.name}</div><div class="char-meta">Make your changes below</div></div>
+          <div class="char-badge" style="color:var(--gold);border-color:var(--gold);">Edit Mode</div>
+        </div>
+        <div class="char-body" onclick="event.stopPropagation()">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:.7rem">
+            <div><label>Name</label><input id="e-name-${c.id}" type="text" value="${c.name}" style="${editInputStyle('Cinzel','1rem')}"/></div>
+            <div><label>Class</label><input id="e-cls-${c.id}"  type="text" value="${c.cls==='—'?'':c.cls}" placeholder="—" style="${editInputStyle('Crimson Pro','1rem')}"/></div>
+            <div><label>Race</label><input id="e-race-${c.id}" type="text" value="${c.race==='—'?'':c.race}" placeholder="—" style="${editInputStyle('Crimson Pro','1rem')}"/></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:.9rem">
+            <div><label>Level</label><input id="e-level-${c.id}" type="text" value="${c.level}" style="${editInputStyle('Crimson Pro','1rem')}"/></div>
+            <div><label>Current HP</label>
+              <div style="display:flex;align-items:center;gap:.3rem">
+                <span style="font-family:'Cinzel',serif;font-size:1rem;color:var(--parchment);padding:.35rem .5rem;background:rgba(10,6,2,.5);border:1px solid #3a2910;border-radius:2px;min-width:40px;text-align:center">${c.hp}</span>
+                <span style="color:var(--gold-dim);font-size:.8rem">(use HP tracker)</span>
+              </div>
+            </div>
+            <div><label>Max HP</label><input id="e-maxhp-${c.id}" type="number" value="${c.maxhp}" style="${editInputStyle('Crimson Pro','1rem')}"/></div>
+          </div>
+
+          <div class="section-title" style="font-size:.6rem;margin-bottom:.5rem">Stats
+            <span style="margin-left:auto;display:flex;gap:.4rem">
+              <button class="btn btn-ghost" onclick="addEditStat(${c.id})" style="font-size:.55rem;padding:.3rem .7rem">+ Add</button>
+              <button class="btn btn-ghost" onclick="removeEditStat(${c.id})" style="font-size:.55rem;padding:.3rem .7rem">− Remove</button>
+            </span>
+          </div>
+          <div style="display:grid;grid-template-columns:2fr 1.5fr 1.5fr;gap:.3rem;margin-bottom:.3rem">
+            <span style="font-family:'Cinzel',serif;font-size:.55rem;color:var(--gold-dim);letter-spacing:.1em">NAME</span>
+            <span style="font-family:'Cinzel',serif;font-size:.55rem;color:var(--gold-dim);letter-spacing:.1em;text-align:center">VALUE</span>
+            <span style="font-family:'Cinzel',serif;font-size:.55rem;color:var(--gold-dim);letter-spacing:.1em;text-align:center">MOD</span>
+          </div>
+          <div id="e-stats-${c.id}">${statRows}</div>
+
+          <div style="margin-top:.9rem">
+            <label>Notes / Backstory</label>
+            <textarea id="e-notes-${c.id}" style="${editInputStyle('IM Fell English','1rem')}min-height:80px;resize:vertical;font-style:italic;line-height:1.6">${c.notes||''}</textarea>
+          </div>
+
+          <div class="char-actions" style="margin-top:1rem">
+            <button class="btn btn-primary" onclick="saveEdit(${c.id});event.stopPropagation()">✦ Save Changes</button>
+            <button class="btn btn-ghost" onclick="toggleEdit(${c.id});event.stopPropagation()">Cancel</button>
+            <button class="btn btn-danger" onclick="deleteCharacter(${c.id});event.stopPropagation()">✕ Remove</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // ── VIEW MODE ──
     return`<div class="char-card ${c.expanded?'expanded':''}" onclick="toggleChar(${c.id})">
       <div class="char-header">
-        <div><div class="char-name">${c.name}</div><div class="char-meta">Lvl ${c.level} ${c.race} ${c.cls}</div></div>
+        <div><div class="char-name">${c.name}</div><div class="char-meta">Lvl ${c.level} · ${c.race} ${c.cls}</div></div>
         <div class="char-badge">${c.expanded?'Close':'View'}</div>
       </div>
       ${c.expanded?`<div class="char-body" onclick="event.stopPropagation()">
-        <div class="stats-row">${stats.map(s=>`<div class="stat-box"><span class="stat-label">${s.k}</span><span class="stat-val">${s.v}</span><span class="stat-mod">${mod(s.v)}</span></div>`).join('')}</div>
+        ${stats.length?`<div class="stats-row" style="grid-template-columns:repeat(${cols},1fr)">
+          ${stats.map(s=>`<div class="stat-box">
+            <span class="stat-label">${s.name}</span>
+            <span class="stat-val">${s.val!==''?s.val:'—'}</span>
+            ${s.mod!==''?`<span class="stat-mod">${s.mod}</span>`:''}
+          </div>`).join('')}
+        </div>`:''}
         <div class="hp-bar-wrap"><div class="hp-label"><span>Hit Points</span><span>${c.hp}/${c.maxhp}</span></div><div class="hp-bar"><div class="hp-fill" style="width:${p}%"></div></div></div>
         <div class="hp-editor">
           <input type="number" id="hp-input-${c.id}" value="1" min="1" onclick="event.stopPropagation()"/>
@@ -412,8 +605,15 @@ function renderChars(){
           <button class="btn btn-danger" onclick="updateHP(${c.id},-1);event.stopPropagation()">Dmg −</button>
         </div>
         ${c.notes?`<div class="char-notes">${c.notes}</div>`:''}
-        <div class="char-actions"><button class="btn btn-danger" onclick="deleteCharacter(${c.id});event.stopPropagation()">✕ Remove</button></div>
-      </div>`:`<div class="char-body"><div class="hp-bar"><div class="hp-fill" style="width:${p}%"></div></div><div style="font-size:.8rem;color:var(--gold-dim);font-family:'Cinzel',serif;margin-top:.4rem">${c.hp}/${c.maxhp} HP</div></div>`}
+        <div class="char-actions">
+          <button class="btn btn-ghost" onclick="toggleEdit(${c.id});event.stopPropagation()" style="font-size:.6rem">✎ Edit</button>
+          <button class="btn btn-danger" onclick="deleteCharacter(${c.id});event.stopPropagation()">✕ Remove</button>
+        </div>
+      </div>`:`<div class="char-body">
+        <div class="hp-bar"><div class="hp-fill" style="width:${p}%"></div></div>
+        <div style="font-size:.8rem;color:var(--gold-dim);font-family:'Cinzel',serif;margin-top:.4rem">${c.hp}/${c.maxhp} HP</div>
+        ${stats.length?`<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem">${stats.slice(0,6).map(s=>`<span style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--gold-dim);border:1px solid #3a2910;padding:.1rem .4rem;">${s.name}${s.val!==''?' '+s.val:''}${s.mod!==''?' <em style=color:#c8a84b>'+s.mod+'</em>':''}</span>`).join('')}</div>`:''}
+      </div>`}
     </div>`;
   }).join('')}</div>`;
 }
@@ -427,7 +627,7 @@ function addEntry(){
   journal.unshift({id:Date.now(),title,body,tag:document.getElementById('j-tag').value,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});
   renderJournal();
   document.getElementById('j-title').value='';document.getElementById('j-body').value='';
-  toast('✦ Entry written to the Chronicles');
+  toast('✦ Entry written to the Chronicle');
 }
 function deleteEntry(id){journal=journal.filter(e=>e.id!==id);renderJournal();}
 function filterEntries(btn,filter){
@@ -549,7 +749,7 @@ async function exportPDF(){
   // Title page
   drawBg(); y=72;
   doc.setFont('times','bolditalic'); doc.setFontSize(34); doc.setTextColor(232,201,106);
-  doc.text('The Chronicles',W/2,y,{align:'center'}); y+=12;
+  doc.text('The Chronicle',W/2,y,{align:'center'}); y+=12;
   doc.setFont('times','italic'); doc.setFontSize(12); doc.setTextColor(120,96,38);
   doc.text('A Tome for Heroes & Their Tales',W/2,y,{align:'center'}); y+=20;
   doc.setDrawColor(200,168,75); doc.setLineWidth(0.4);
@@ -580,20 +780,25 @@ async function exportPDF(){
       y+=16;
 
       // ability scores
-      const stats=[{k:'STR',v:c.str},{k:'DEX',v:c.dex},{k:'CON',v:c.con},{k:'INT',v:c.int},{k:'WIS',v:c.wis},{k:'CHA',v:c.cha}];
-      const bw=CW/6;
-      stats.forEach((s,i)=>{
-        const bx=M+i*bw;
-        doc.setFillColor(18,11,4); doc.rect(bx,y,bw-0.8,16,'F');
-        doc.setDrawColor(55,38,14); doc.setLineWidth(0.2); doc.rect(bx,y,bw-0.8,16,'S');
-        doc.setFont('times','bold'); doc.setFontSize(6.5); doc.setTextColor(110,86,30);
-        doc.text(s.k,bx+bw/2-0.5,y+4.8,{align:'center'});
-        doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(245,237,216);
-        doc.text(String(s.v),bx+bw/2-0.5,y+11.5,{align:'center'});
-        doc.setFont('times','normal'); doc.setFontSize(7); doc.setTextColor(110,86,30);
-        doc.text(mod(s.v),bx+bw/2-0.5,y+15.2,{align:'center'});
-      });
-      y+=20;
+      const stats=c.stats||[];
+      if(stats.length){
+        const cols=Math.min(8,stats.length);
+        const bw=CW/cols;
+        stats.slice(0,cols).forEach((s,i)=>{
+          const bx=M+i*bw;
+          doc.setFillColor(18,11,4); doc.rect(bx,y,bw-0.8,18,'F');
+          doc.setDrawColor(55,38,14); doc.setLineWidth(0.2); doc.rect(bx,y,bw-0.8,18,'S');
+          doc.setFont('times','bold'); doc.setFontSize(6); doc.setTextColor(110,86,30);
+          doc.text((s.name||'').toUpperCase().slice(0,6),bx+bw/2-0.5,y+5,{align:'center'});
+          doc.setFont('times','bold'); doc.setFontSize(12); doc.setTextColor(245,237,216);
+          doc.text(s.val!==''?String(s.val):'—',bx+bw/2-0.5,y+12,{align:'center'});
+          if(s.mod!==''){
+            doc.setFont('times','italic'); doc.setFontSize(7); doc.setTextColor(200,168,75);
+            doc.text(String(s.mod),bx+bw/2-0.5,y+16.5,{align:'center'});
+          }
+        });
+        y+=22;
+      }
 
       // notes
       if(c.notes){
