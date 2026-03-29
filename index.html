@@ -188,6 +188,14 @@ select option{background:#1a0d05;}
 .toast.err{border-color:var(--blood);color:#ff9999;}
 .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;}
 .mt{margin-top:1rem;}
+/* modifier toggle */
+.hide-mods .stat-mod{display:none;}
+.hide-mods .mod-field{display:none!important;}
+.hide-mods .mod-col-header{display:none!important;}
+.hide-mods .edit-stat-row{grid-template-columns:2fr 1.5fr!important;}
+.mod-toggle-btn{font-family:'Cinzel',serif;font-size:.6rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:.35rem .9rem;background:transparent;border:1px solid #3a2910;color:var(--gold-dim);cursor:pointer;transition:all .2s;border-radius:2px;}
+.mod-toggle-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+.mod-toggle-btn.active{border-color:var(--gold-dim);background:rgba(200,168,75,.1);color:var(--gold);}
 @media(max-width:500px){.stats-row{grid-template-columns:repeat(3,1fr)}.form-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -208,7 +216,12 @@ select option{background:#1a0d05;}
 <!-- ══ CHARACTERS ══ -->
 <div class="tab-panel active" id="tab-characters">
   <div class="card">
-    <div class="section-title">Add Character</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+      <div class="section-title" style="margin:0;flex:1">Add Character</div>
+      <button class="mod-toggle-btn" id="mod-toggle-btn" onclick="toggleMods()" title="Show or hide modifier fields">
+        ◈ Modifiers: <span id="mod-toggle-label">On</span>
+      </button>
+    </div>
     <div class="form-grid">
       <div class="form-full" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem">
         <div><label>Name</label><input type="text" id="c-name" placeholder="Aldric Thornveil"/></div>
@@ -228,32 +241,32 @@ select option{background:#1a0d05;}
           <div>
             <input type="text" id="c-sname-0" value="STR" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
             <input type="number" id="c-sval-0" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
-            <input type="text"   id="c-smod-0" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+            <input type="text"   id="c-smod-0" placeholder="Mod" class="mod-field" style="text-align:center;font-size:.85rem"/>
           </div>
           <div>
             <input type="text" id="c-sname-1" value="DEX" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
             <input type="number" id="c-sval-1" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
-            <input type="text"   id="c-smod-1" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+            <input type="text"   id="c-smod-1" placeholder="Mod" class="mod-field" style="text-align:center;font-size:.85rem"/>
           </div>
           <div>
             <input type="text" id="c-sname-2" value="CON" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
             <input type="number" id="c-sval-2" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
-            <input type="text"   id="c-smod-2" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+            <input type="text"   id="c-smod-2" placeholder="Mod" class="mod-field" style="text-align:center;font-size:.85rem"/>
           </div>
           <div>
             <input type="text" id="c-sname-3" value="INT" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
             <input type="number" id="c-sval-3" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
-            <input type="text"   id="c-smod-3" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+            <input type="text"   id="c-smod-3" placeholder="Mod" class="mod-field" style="text-align:center;font-size:.85rem"/>
           </div>
           <div>
             <input type="text" id="c-sname-4" value="WIS" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
             <input type="number" id="c-sval-4" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
-            <input type="text"   id="c-smod-4" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+            <input type="text"   id="c-smod-4" placeholder="Mod" class="mod-field" style="text-align:center;font-size:.85rem"/>
           </div>
           <div>
             <input type="text" id="c-sname-5" value="CHA" style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem"/>
             <input type="number" id="c-sval-5" placeholder="Val" value="10" style="text-align:center;margin-bottom:.2rem"/>
-            <input type="text"   id="c-smod-5" placeholder="Mod" style="text-align:center;font-size:.85rem"/>
+            <input type="text"   id="c-smod-5" placeholder="Mod" class="mod-field" style="text-align:center;font-size:.85rem"/>
           </div>
         </div>
         <div style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap">
@@ -289,7 +302,7 @@ select option{background:#1a0d05;}
         <label>Entry</label>
         <div class="tab-toggle">
           <button id="j-tab-write" class="active" onclick="switchJournalTab('write')">✎ Write</button>
-          <button id="j-tab-preview" onclick="switchJournalTab('preview')">👁 Preview</button>
+          <button id="j-tab-preview" onclick="switchJournalTab('preview')">Preview</button>
         </div>
         <textarea id="j-body" placeholder="The party arrived at Thornwall as smoke still curled...&#10;&#10;Supports **bold**, *italic*, # Headings, - lists, > quotes, and more." style="min-height:130px"></textarea>
         <div class="md-preview-wrap" id="j-preview"></div>
@@ -452,7 +465,7 @@ function addStatField() {
   div.innerHTML = `
     <input type="text"   id="c-sname-${i}" placeholder="Stat"   style="text-align:center;font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem;width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);padding:.4rem .5rem;outline:none;border-radius:2px"/>
     <input type="number" id="c-sval-${i}" placeholder="Val" value="10" style="text-align:center;width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:1rem;padding:.4rem .5rem;outline:none;border-radius:2px;margin-bottom:.2rem"/>
-    <input type="text"   id="c-smod-${i}" placeholder="Mod"   style="text-align:center;font-size:.85rem;width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;padding:.4rem .5rem;outline:none;border-radius:2px"/>`;
+    <input type="text"   id="c-smod-${i}" placeholder="Mod" class="mod-field"  style="text-align:center;font-size:.85rem;width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;padding:.4rem .5rem;outline:none;border-radius:2px"/>`;
   grid.appendChild(div);
 }
 
@@ -545,7 +558,7 @@ function addEditStat(id){
   row.innerHTML=`
     <input class="esn" type="text"   placeholder="Name"  style="${editInputStyle('Cinzel','.7rem')}text-transform:uppercase;"/>
     <input class="esv" type="number" placeholder="Val"   style="${editInputStyle('Crimson Pro','1rem')}text-align:center;"/>
-    <input class="esm" type="text"   placeholder="Mod"   style="${editInputStyle('Crimson Pro','.9rem')}text-align:center;"/>`;
+    <input class="esm mod-field" type="text" placeholder="Mod" style="${editInputStyle('Crimson Pro','.9rem')}text-align:center;"/>`;
   grid.appendChild(row);
 }
 function removeEditStat(id){
@@ -580,7 +593,7 @@ function renderChars(){
         ? stats.map(s=>`<div class="edit-stat-row" style="display:grid;grid-template-columns:2fr 1.5fr 1.5fr;gap:.3rem;margin-bottom:.3rem;">
             <input class="esn" type="text"   value="${s.name}" style="${editInputStyle('Cinzel','.7rem')}text-transform:uppercase;"/>
             <input class="esv" type="number" value="${s.val}"  style="${editInputStyle('Crimson Pro','1rem')}text-align:center;"/>
-            <input class="esm" type="text"   value="${s.mod}"  style="${editInputStyle('Crimson Pro','.9rem')}text-align:center;"/>
+            <input class="esm mod-field" type="text" value="${s.mod}" style="${editInputStyle('Crimson Pro','.9rem')}text-align:center;"/>
           </div>`).join('')
         : '';
       return`<div class="char-card expanded" style="border-color:var(--gold);">
@@ -615,7 +628,7 @@ function renderChars(){
           <div style="display:grid;grid-template-columns:2fr 1.5fr 1.5fr;gap:.3rem;margin-bottom:.3rem">
             <span style="font-family:'Cinzel',serif;font-size:.55rem;color:var(--gold-dim);letter-spacing:.1em">NAME</span>
             <span style="font-family:'Cinzel',serif;font-size:.55rem;color:var(--gold-dim);letter-spacing:.1em;text-align:center">VALUE</span>
-            <span style="font-family:'Cinzel',serif;font-size:.55rem;color:var(--gold-dim);letter-spacing:.1em;text-align:center">MOD</span>
+            <span class="mod-col-header" style="font-family:'Cinzel',serif;font-size:.55rem;color:var(--gold-dim);letter-spacing:.1em;text-align:center">MOD</span>
           </div>
           <div id="e-stats-${c.id}">${statRows}</div>
 
@@ -1025,10 +1038,37 @@ async function driveBackup(){
   }
 }
 
+// ── Modifier toggle ──
+let showMods = localStorage.getItem('chronicle_show_mods') !== 'false';
+
+function toggleMods(){
+  showMods = !showMods;
+  localStorage.setItem('chronicle_show_mods', showMods);
+  applyModToggle();
+  renderChars(); // re-render cards to reflect change
+}
+
+function applyModToggle(){
+  const tab = document.getElementById('tab-characters');
+  const btn = document.getElementById('mod-toggle-btn');
+  const lbl = document.getElementById('mod-toggle-label');
+  if(!tab) return;
+  if(showMods){
+    tab.classList.remove('hide-mods');
+    if(btn) btn.classList.add('active');
+    if(lbl) lbl.textContent = 'On';
+  } else {
+    tab.classList.add('hide-mods');
+    if(btn) btn.classList.remove('active');
+    if(lbl) lbl.textContent = 'Off';
+  }
+}
+
 // ── Init ──
 renderChars(); renderJournal(); renderHistory();
 if(driveClientId) document.getElementById('drive-client-id').value=driveClientId;
 setDriveStatus('warn','○ Not connected — paste your Client ID and click Connect');
+applyModToggle();
 </script>
 </body>
 </html>
