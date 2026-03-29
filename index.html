@@ -6,6 +6,7 @@
 <title>The Chronicle — TTRPG Journal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
@@ -87,7 +88,47 @@ select option{background:#1a0d05;}
 .tag-session{border-color:#5a7a3a;color:#7aaa4a;}.tag-lore{border-color:#3a5a7a;color:#4a8aaa;}
 .tag-quest{border-color:#7a5a2a;color:#c8922a;}.tag-npc{border-color:#6a3a6a;color:#aa6aaa;}
 .tag-other{border-color:#3a3a3a;color:#888;}
-.entry-body{font-family:'IM Fell English',serif;font-size:.97rem;line-height:1.75;color:#c8b88a;white-space:pre-wrap;}
+.entry-body{font-family:'IM Fell English',serif;font-size:.97rem;line-height:1.75;color:#c8b88a;}
+.entry-body p{margin-bottom:.7em;}
+.entry-body p:last-child{margin-bottom:0;}
+.entry-body h1,.entry-body h2,.entry-body h3{font-family:'Cinzel',serif;color:var(--gold-light);font-weight:700;margin:.9em 0 .4em;letter-spacing:.04em;}
+.entry-body h1{font-size:1.2rem;}.entry-body h2{font-size:1.05rem;}.entry-body h3{font-size:.95rem;color:var(--gold);}
+.entry-body strong{color:var(--parchment);font-weight:700;}
+.entry-body em{font-style:italic;color:#d4c09a;}
+.entry-body ul,.entry-body ol{padding-left:1.4em;margin:.5em 0;}
+.entry-body li{margin-bottom:.25em;}
+.entry-body ul li::marker{color:var(--gold-dim);}
+.entry-body ol li::marker{color:var(--gold-dim);font-family:'Cinzel',serif;font-size:.8em;}
+.entry-body blockquote{border-left:3px solid var(--gold-dim);margin:.6em 0;padding:.4em .9em;color:#a89060;font-style:italic;background:rgba(0,0,0,.25);}
+.entry-body code{font-family:monospace;font-size:.88em;background:rgba(0,0,0,.4);border:1px solid #3a2910;padding:.1em .35em;border-radius:2px;color:#d4c09a;}
+.entry-body pre{background:rgba(0,0,0,.5);border:1px solid #3a2910;padding:.7em 1em;border-radius:2px;overflow-x:auto;margin:.6em 0;}
+.entry-body pre code{background:none;border:none;padding:0;}
+.entry-body hr{border:none;border-top:1px solid #3a2910;margin:1em 0;}
+.entry-body a{color:var(--gold);text-decoration:underline;}
+.entry-body table{border-collapse:collapse;width:100%;margin:.6em 0;font-size:.88rem;}
+.entry-body th{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim);border-bottom:1px solid var(--gold-dim);padding:.4em .7em;text-align:left;}
+.entry-body td{padding:.35em .7em;border-bottom:1px solid #2a1a08;}
+.char-notes p{margin-bottom:.5em;}.char-notes p:last-child{margin-bottom:0;}
+.char-notes strong{color:var(--parchment);}.char-notes em{color:#b8a070;}
+.char-notes ul,.char-notes ol{padding-left:1.3em;margin:.4em 0;}
+.char-notes h1,.char-notes h2,.char-notes h3{font-family:'Cinzel',serif;color:var(--gold);margin:.6em 0 .3em;font-size:.95rem;}
+/* markdown preview */
+.md-preview-wrap{background:rgba(0,0,0,.35);border:1px solid #3a2910;border-radius:2px;padding:.8rem 1rem;min-height:90px;font-family:'IM Fell English',serif;font-size:.97rem;line-height:1.75;color:#c8b88a;display:none;}
+.md-preview-wrap p{margin-bottom:.6em;}.md-preview-wrap p:last-child{margin-bottom:0;}
+.md-preview-wrap h1,.md-preview-wrap h2,.md-preview-wrap h3{font-family:'Cinzel',serif;color:var(--gold-light);margin:.7em 0 .3em;}
+.md-preview-wrap strong{color:var(--parchment);}.md-preview-wrap em{color:#d4c09a;}
+.md-preview-wrap ul,.md-preview-wrap ol{padding-left:1.3em;margin:.4em 0;}
+.md-preview-wrap blockquote{border-left:3px solid var(--gold-dim);padding:.3em .8em;color:#a89060;font-style:italic;background:rgba(0,0,0,.2);margin:.5em 0;}
+.md-preview-wrap code{font-family:monospace;font-size:.88em;background:rgba(0,0,0,.4);border:1px solid #3a2910;padding:.1em .3em;border-radius:2px;color:#d4c09a;}
+.md-preview-wrap hr{border:none;border-top:1px solid #3a2910;margin:.8em 0;}
+.md-preview-wrap table{border-collapse:collapse;width:100%;font-size:.88rem;}
+.md-preview-wrap th{font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-dim);border-bottom:1px solid var(--gold-dim);padding:.35em .6em;text-align:left;}
+.md-preview-wrap td{padding:.3em .6em;border-bottom:1px solid #2a1a08;}
+.tab-toggle{display:flex;gap:0;margin-bottom:.5rem;}
+.tab-toggle button{font-family:'Cinzel',serif;font-size:.6rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:.4rem .9rem;background:transparent;border:1px solid #3a2910;color:var(--gold-dim);cursor:pointer;transition:all .15s;}
+.tab-toggle button.active{background:rgba(200,168,75,.12);border-color:var(--gold-dim);color:var(--gold);}
+.tab-toggle button:first-child{border-radius:2px 0 0 2px;}
+.tab-toggle button:last-child{border-radius:0 2px 2px 0;border-left:none;}
 /* dice */
 .dice-section{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
 @media(max-width:640px){.dice-section{grid-template-columns:1fr;}}
@@ -244,7 +285,15 @@ select option{background:#1a0d05;}
           </select>
         </div>
       </div>
-      <div class="form-full"><label>Entry</label><textarea id="j-body" placeholder="The party arrived at Thornwall as smoke still curled..." style="min-height:130px"></textarea></div>
+      <div class="form-full">
+        <label>Entry</label>
+        <div class="tab-toggle">
+          <button id="j-tab-write" class="active" onclick="switchJournalTab('write')">✎ Write</button>
+          <button id="j-tab-preview" onclick="switchJournalTab('preview')">👁 Preview</button>
+        </div>
+        <textarea id="j-body" placeholder="The party arrived at Thornwall as smoke still curled...&#10;&#10;Supports **bold**, *italic*, # Headings, - lists, > quotes, and more." style="min-height:130px"></textarea>
+        <div class="md-preview-wrap" id="j-preview"></div>
+      </div>
       <div class="form-full"><button class="btn btn-primary" onclick="addEntry()">✦ Add Entry</button></div>
     </div>
   </div>
@@ -604,7 +653,7 @@ function renderChars(){
           <button class="btn btn-ghost" onclick="updateHP(${c.id},1);event.stopPropagation()">Heal +</button>
           <button class="btn btn-danger" onclick="updateHP(${c.id},-1);event.stopPropagation()">Dmg −</button>
         </div>
-        ${c.notes?`<div class="char-notes">${c.notes}</div>`:''}
+        ${c.notes?`<div class="char-notes">${marked.parse(c.notes)}</div>`:''}
         <div class="char-actions">
           <button class="btn btn-ghost" onclick="toggleEdit(${c.id});event.stopPropagation()" style="font-size:.6rem">✎ Edit</button>
           <button class="btn btn-danger" onclick="deleteCharacter(${c.id});event.stopPropagation()">✕ Remove</button>
@@ -647,8 +696,26 @@ function renderJournal(){
         <button class="btn btn-danger" onclick="deleteEntry(${e.id})">✕</button>
       </div>
     </div>
-    <div class="entry-body">${e.body}</div>
+    <div class="entry-body">${marked.parse(e.body||'')}</div>
   </div>`).join('');
+}
+
+// ── Journal preview ──
+function switchJournalTab(tab){
+  const textarea = document.getElementById('j-body');
+  const preview  = document.getElementById('j-preview');
+  const btnWrite  = document.getElementById('j-tab-write');
+  const btnPreview= document.getElementById('j-tab-preview');
+  if(tab==='preview'){
+    preview.innerHTML = marked.parse(textarea.value||'*Nothing to preview yet.*');
+    preview.style.display='block';
+    textarea.style.display='none';
+    btnPreview.classList.add('active'); btnWrite.classList.remove('active');
+  } else {
+    preview.style.display='none';
+    textarea.style.display='block';
+    btnWrite.classList.add('active'); btnPreview.classList.remove('active');
+  }
 }
 
 // ── Dice ──
