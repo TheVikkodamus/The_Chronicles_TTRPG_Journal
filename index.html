@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>The Chronicles — A TTRPG Journal</title>
+<title>The Chronicle — TTRPG Journal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -194,7 +194,7 @@ select option{background:#1a0d05;}
 <body>
 <header>
   <div class="logo-rune">⚔️</div>
-  <h1>The Chronicles</h1>
+  <h1>The Chronicle</h1>
   <p class="subtitle">A Tome for Heroes &amp; Their Tales</p>
 </header>
 <nav id="nav">
@@ -351,7 +351,7 @@ select option{background:#1a0d05;}
 <!-- ══ BACKUP & EXPORT ══ -->
 <div class="tab-panel" id="tab-backup">
   <div class="card" style="margin-bottom:1.5rem">
-    <div class="section-title">Chronicles Contents</div>
+    <div class="section-title">Chronicle Contents</div>
     <div class="backup-stats" id="backup-stats">Open this tab to see stats</div>
   </div>
   <div class="backup-grid">
@@ -388,7 +388,7 @@ select option{background:#1a0d05;}
     <div class="backup-card" style="grid-column:1/-1">
       <span class="backup-icon">🔵</span>
       <div class="backup-title">Google Drive Backup</div>
-      <div class="backup-desc">Upload your Chronicles backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
+      <div class="backup-desc">Upload your Chronicle backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
       <div id="drive-status-wrap"></div>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem">
         <button class="btn btn-drive" id="drive-backup-btn" onclick="driveBackup()" disabled>🔵 Backup to Drive</button>
@@ -913,6 +913,9 @@ async function exportPDF(){
 }
 
 // ── Google Drive ──
+let driveTokenClient = null;   // reusable token client instance
+let driveTokenExpiry = 0;      // ms timestamp when current token expires
+
 function saveClientId(){
   driveClientId=document.getElementById('drive-client-id').value.trim();
   localStorage.setItem('chronicle_client_id',driveClientId);
@@ -921,6 +924,7 @@ function setDriveStatus(type,msg){
   const map={ok:'status-ok',warn:'status-warn',err:'status-err'};
   document.getElementById('drive-status-wrap').innerHTML=`<div class="status-badge ${map[type]||'status-warn'}">${msg}</div>`;
 }
+
 function initDrive(){
   const id=document.getElementById('drive-client-id').value.trim()||driveClientId;
   if(!id){toast('⚠ Paste your Client ID first',true);return;}
@@ -929,52 +933,85 @@ function initDrive(){
     setDriveStatus('err','✗ Google library not loaded — check your internet connection');
     return;
   }
-  const statusEl=document.getElementById('drive-connect-status');
-  statusEl.textContent='Connecting…';
+  document.getElementById('drive-connect-status').textContent='Connecting…';
   try{
-    const tc=google.accounts.oauth2.initTokenClient({
-      client_id:id,
-      scope:'https://www.googleapis.com/auth/drive.file',
-      callback:(resp)=>{
+    // Create the token client once and keep it for silent refreshes
+    driveTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id: id,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback: (resp) => {
         if(resp.error){
           setDriveStatus('err','✗ Auth failed: '+resp.error);
-          statusEl.textContent=''; toast('⚠ Auth failed: '+resp.error,true); return;
+          document.getElementById('drive-connect-status').textContent='';
+          toast('⚠ Auth failed: '+resp.error,true);
+          // reject any waiting promise
+          if(driveTokenClient._reject) driveTokenClient._reject(new Error(resp.error));
+          return;
         }
-        driveAccessToken=resp.access_token;
+        driveAccessToken = resp.access_token;
+        // tokens last 3600s; refresh 5 min early to be safe
+        driveTokenExpiry = Date.now() + (resp.expires_in ? (resp.expires_in - 300)*1000 : 3300*1000);
         setDriveStatus('ok','✓ Connected to Google Drive');
         document.getElementById('drive-backup-btn').disabled=false;
         document.getElementById('drive-signout-btn').style.display='inline-block';
-        statusEl.textContent='Connected ✓';
-        toast('✦ Google Drive connected');
+        document.getElementById('drive-connect-status').textContent='Connected ✓';
+        // resolve any waiting promise
+        if(driveTokenClient._resolve) driveTokenClient._resolve(resp.access_token);
       }
     });
-    tc.requestAccessToken({prompt:'consent'});
+    // First connection — show consent screen
+    driveTokenClient.requestAccessToken({prompt:'consent'});
   }catch(e){
     setDriveStatus('err','✗ Invalid Client ID or domain not authorised');
-    statusEl.textContent='';
+    document.getElementById('drive-connect-status').textContent='';
   }
 }
+
+// Returns a valid token, silently refreshing if expired — no popup after first auth
+function getFreshToken(){
+  return new Promise((resolve, reject)=>{
+    if(driveAccessToken && Date.now() < driveTokenExpiry){
+      // Token still valid
+      resolve(driveAccessToken);
+      return;
+    }
+    if(!driveTokenClient){
+      reject(new Error('Not connected — click Connect to Drive first'));
+      return;
+    }
+    // Attach resolve/reject so the shared callback above can settle this promise
+    driveTokenClient._resolve = resolve;
+    driveTokenClient._reject  = reject;
+    setDriveStatus('warn','↻ Refreshing token…');
+    // prompt:'' means silent refresh — no popup if the user already consented
+    driveTokenClient.requestAccessToken({prompt:''});
+  });
+}
+
 function driveSignOut(){
   if(driveAccessToken) google.accounts.oauth2.revoke(driveAccessToken);
-  driveAccessToken=null;
+  driveAccessToken=null; driveTokenExpiry=0; driveTokenClient=null;
   document.getElementById('drive-backup-btn').disabled=true;
   document.getElementById('drive-signout-btn').style.display='none';
   setDriveStatus('warn','○ Not connected');
   toast('Signed out of Google Drive');
 }
+
 async function driveBackup(){
-  if(!driveAccessToken){toast('⚠ Connect to Google Drive first',true);return;}
+  if(!driveTokenClient){toast('⚠ Connect to Google Drive first',true);return;}
   if(!characters.length&&!journal.length){toast('⚠ Nothing to back up yet!',true);return;}
   const btn=document.getElementById('drive-backup-btn');
   btn.disabled=true; btn.textContent='⏳ Uploading…';
-  const filename=`chronicle-backup-${new Date().toISOString().slice(0,10)}.json`;
-  const content=JSON.stringify(getBackupData(),null,2);
-  const boundary='--------ChronicleBackupBoundary314159';
-  const body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:filename,mimeType:'application/json'})}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
   try{
+    // Always get a fresh token — silently refreshes if expired
+    const token = await getFreshToken();
+    const filename=`chronicle-backup-${new Date().toISOString().slice(0,10)}.json`;
+    const content=JSON.stringify(getBackupData(),null,2);
+    const boundary='--------ChronicleBackupBoundary314159';
+    const body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:filename,mimeType:'application/json'})}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
     const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{
       method:'POST',
-      headers:{'Authorization':'Bearer '+driveAccessToken,'Content-Type':`multipart/related; boundary="${boundary}"`},
+      headers:{'Authorization':'Bearer '+token,'Content-Type':`multipart/related; boundary="${boundary}"`},
       body
     });
     if(!res.ok){const err=await res.json();throw new Error(err.error?.message||res.statusText);}
@@ -982,7 +1019,7 @@ async function driveBackup(){
     setDriveStatus('ok',`✓ Last backup: ${new Date().toLocaleTimeString()}`);
   }catch(e){
     toast('⚠ Upload failed: '+e.message,true);
-    setDriveStatus('err','✗ Upload failed — token may have expired, reconnect');
+    setDriveStatus('err','✗ '+e.message);
   }finally{
     btn.disabled=false; btn.textContent='🔵 Backup to Drive';
   }
