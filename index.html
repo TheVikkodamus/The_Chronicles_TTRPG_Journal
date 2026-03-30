@@ -466,6 +466,21 @@ select option{background:#1a0d05;}
       <div class="init-list" id="init-list">
         <div class="empty-state"><div class="empty-state-icon">⚔️</div><p>No combatants yet. Add someone to begin the encounter.</p></div>
       </div>
+
+      <!-- Player Roll Entry -->
+      <div id="player-roll-panel" style="display:none;margin-top:1rem;background:var(--panel);border:1px solid #3a2910;border-radius:var(--radius);padding:1rem;position:relative;">
+        <div class="section-title" style="margin-bottom:.8rem">Enter Player Rolls</div>
+        <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:.82rem;color:#7a6040;margin-bottom:.8rem">Type each player's d20 result — their Init Modifier is automatically added. Hit Apply to sort.</p>
+        <div id="player-roll-inputs" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem;"></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="applyPlayerRolls()" style="font-size:.65rem">✦ Apply & Sort</button>
+          <button class="btn btn-ghost" onclick="closePlayerRolls()" style="font-size:.6rem">Cancel</button>
+        </div>
+      </div>
+
+      <div style="margin-top:.7rem;">
+        <button class="btn btn-ghost" id="open-player-rolls-btn" onclick="openPlayerRolls()" style="font-size:.6rem;width:100%">🎲 Enter Player Rolls</button>
+      </div>
     </div>
 
   </div>
@@ -1338,6 +1353,56 @@ function importFromChars(){
   sortInitiative(false);
   renderInitiative();
   toast(`✦ Imported ${added} character${added!==1?'s':''} — set their initiative!`);
+}
+
+function openPlayerRolls(){
+  const players = combatants.filter(c => c.type === 'player' && !c.defeated);
+  if(!players.length){ toast('⚠ No player combatants in the list yet', true); return; }
+  const panel  = document.getElementById('player-roll-panel');
+  const inputs = document.getElementById('player-roll-inputs');
+  const btn    = document.getElementById('open-player-rolls-btn');
+  // Build one row per player
+  inputs.innerHTML = players.map(c => `
+    <div style="display:grid;grid-template-columns:1fr 90px 60px;align-items:center;gap:.5rem;">
+      <span style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--parchment)">${c.name}</span>
+      <input
+        type="number" min="1" max="20"
+        id="pr-${c.id}"
+        placeholder="d20 roll"
+        style="text-align:center;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:1rem;padding:.4rem .5rem;outline:none;border-radius:2px;"
+      />
+      <span style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--gold-dim);white-space:nowrap;">
+        ${(c.initMod||0) >= 0 ? '+' : ''}${c.initMod||0} mod
+      </span>
+    </div>`).join('');
+  panel.style.display = 'block';
+  btn.style.display   = 'none';
+  // Focus first input
+  const first = document.querySelector('#player-roll-inputs input');
+  if(first) first.focus();
+}
+
+function closePlayerRolls(){
+  document.getElementById('player-roll-panel').style.display = 'none';
+  document.getElementById('open-player-rolls-btn').style.display = 'block';
+}
+
+function applyPlayerRolls(){
+  const players = combatants.filter(c => c.type === 'player' && !c.defeated);
+  let applied = 0;
+  players.forEach(c => {
+    const inp = document.getElementById('pr-' + c.id);
+    if(!inp) return;
+    const roll = parseInt(inp.value);
+    if(isNaN(roll)) return; // skip blanks
+    c.initScore = roll + (c.initMod||0);
+    applied++;
+  });
+  if(!applied){ toast('⚠ Enter at least one roll first', true); return; }
+  sortInitiative(false);
+  renderInitiative();
+  closePlayerRolls();
+  toast('✦ Initiative set for ' + applied + ' player' + (applied !== 1 ? 's' : '') + ' — sorted!');
 }
 
 function rollGroupInitiative(){
