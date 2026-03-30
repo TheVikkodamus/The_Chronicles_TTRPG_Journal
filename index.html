@@ -196,6 +196,57 @@ select option{background:#1a0d05;}
 .mod-toggle-btn{font-family:'Cinzel',serif;font-size:.6rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:.35rem .9rem;background:transparent;border:1px solid #3a2910;color:var(--gold-dim);cursor:pointer;transition:all .2s;border-radius:2px;}
 .mod-toggle-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
 .mod-toggle-btn.active{border-color:var(--gold-dim);background:rgba(200,168,75,.1);color:var(--gold);}
+/* initiative tracker */
+.init-layout{display:grid;grid-template-columns:340px 1fr;gap:1.2rem;align-items:start;}
+@media(max-width:720px){.init-layout{grid-template-columns:1fr;}}
+.init-list{display:flex;flex-direction:column;gap:.5rem;}
+.init-row{
+  display:grid;grid-template-columns:44px 1fr 54px 54px auto;
+  align-items:center;gap:.6rem;
+  padding:.7rem 1rem;
+  background:var(--panel);border:1px solid #3a2910;border-radius:var(--radius);
+  transition:border-color .2s,opacity .2s;
+  position:relative;
+}
+.init-row.active-turn{border-color:var(--gold);box-shadow:0 0 12px rgba(200,168,75,.2);background:rgba(35,22,5,.97);}
+.init-row.active-turn::before{content:'▶';position:absolute;left:-18px;color:var(--gold);font-size:.8rem;}
+.init-row.defeated{opacity:.38;filter:grayscale(.6);}
+.hide-init-col .init-num{display:none;}
+.hide-ac-col .init-ac-cell{display:none;}
+.hide-init-col.hide-ac-col .init-row{grid-template-columns:1fr auto auto;}
+.hide-init-col .init-row{grid-template-columns:1fr 54px auto;}
+.hide-ac-col .init-row{grid-template-columns:44px 1fr 54px auto;}
+.hide-init-col .init-field{display:none;}
+.hide-ac-col .init-ac-field{display:none;}
+.init-field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;}
+.hide-init-col .init-field-row{grid-template-columns:1fr 1fr;}
+.hide-ac-col .init-field-row{grid-template-columns:1fr 1fr;}
+.hide-init-col.hide-ac-col .init-field-row{grid-template-columns:1fr;}
+.init-col-toggle{font-family:'Cinzel',serif;font-size:.55rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;background:transparent;border:1px solid #3a2910;color:var(--gold-dim);cursor:pointer;transition:all .2s;border-radius:2px;}
+.init-col-toggle:hover{border-color:var(--gold-dim);color:var(--gold);}
+.init-col-toggle.active{background:rgba(200,168,75,.1);border-color:var(--gold-dim);color:var(--gold);}
+.init-num{font-family:'Cinzel Decorative',serif;font-size:1.3rem;font-weight:700;color:var(--gold-light);text-align:center;line-height:1;}
+.init-name{font-family:'Cinzel',serif;font-size:.85rem;font-weight:600;color:var(--parchment);}
+.init-type-badge{font-family:'Cinzel',serif;font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.1rem .4rem;border:1px solid;border-radius:2px;display:inline-block;margin-top:.15rem;}
+.type-player{border-color:#3a6a7a;color:#5aaabb;}
+.type-monster{border-color:#7a2a2a;color:#cc5555;}
+.type-npc{border-color:#6a5a2a;color:#c8a84b;}
+.init-stat{text-align:center;}
+.init-stat-label{font-family:'Cinzel',serif;font-size:.5rem;letter-spacing:.1em;color:var(--gold-dim);display:block;text-transform:uppercase;}
+.init-stat-val{font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;color:var(--parchment);}
+.init-hp-bar{height:3px;background:rgba(0,0,0,.4);border-radius:2px;overflow:hidden;margin-top:.3rem;}
+.init-hp-fill{height:100%;border-radius:2px;transition:width .4s;background:linear-gradient(90deg,var(--blood),var(--ember));}
+.init-actions{display:flex;gap:.3rem;flex-wrap:wrap;}
+.init-actions button{font-family:'Cinzel',serif;font-size:.55rem;font-weight:700;letter-spacing:.08em;padding:.3rem .6rem;border:none;cursor:pointer;border-radius:2px;transition:all .15s;}
+.btn-heal{background:rgba(30,70,30,.7);color:#80cc80;border:1px solid #2a5a2a;}
+.btn-heal:hover{background:rgba(40,100,40,.9);}
+.btn-dmg{background:rgba(70,20,20,.7);color:#cc6060;border:1px solid #5a2020;}
+.btn-dmg:hover{background:rgba(100,20,20,.9);}
+.btn-defeat{background:transparent;color:#7a4020;border:1px solid #4a2010;font-size:.5rem;}
+.btn-defeat:hover{background:rgba(100,40,10,.4);color:#c86030;}
+.turn-controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.round-badge{font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--gold-light);padding:.4rem .9rem;border:1px solid var(--gold-dim);background:rgba(0,0,0,.3);border-radius:2px;white-space:nowrap;}
+.init-dmg-input{width:52px;text-align:center;font-size:.85rem;padding:.3rem .4rem;}
 @media(max-width:500px){.stats-row{grid-template-columns:repeat(3,1fr)}.form-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
@@ -207,6 +258,7 @@ select option{background:#1a0d05;}
 </header>
 <nav id="nav">
   <button class="nav-btn active" data-tab="characters">Characters</button>
+  <button class="nav-btn" data-tab="initiative">Initiative</button>
   <button class="nav-btn" data-tab="journal">Journal</button>
   <button class="nav-btn" data-tab="dice">Dice Roller</button>
   <button class="nav-btn" data-tab="backup">Backup &amp; Export</button>
@@ -279,6 +331,113 @@ select option{background:#1a0d05;}
     </div>
   </div>
   <div id="chars-list"></div>
+</div>
+
+<!-- ══ INITIATIVE ══ -->
+<div class="tab-panel" id="tab-initiative">
+
+  <div class="init-layout">
+
+    <!-- Add Combatant Form -->
+    <div class="card" style="position:sticky;top:1rem;">
+      <div class="section-title">Add Combatant</div>
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <div><label>Name</label><input type="text" id="i-name" placeholder="Goblin Archer"/></div>
+        <div class="init-field-row" id="i-field-row">
+          <div class="init-field"><label>Init Modifier</label><input type="number" id="i-init" placeholder="+0" min="-10" max="20"/></div>
+          <div class="init-ac-field"><label>AC</label><input type="number" id="i-ac" placeholder="13" min="0" max="30"/></div>
+          <div><label>HP</label><input type="number" id="i-hp" placeholder="20" min="0"/></div>
+        </div>
+        <div>
+          <label>Type</label>
+          <select id="i-type">
+            <option value="player">Player</option>
+            <option value="monster" selected>Monster</option>
+            <option value="npc">NPC</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.3rem">
+          <button class="btn btn-primary" onclick="addCombatant()">✦ Add</button>
+          <button class="btn btn-ghost" onclick="importFromChars()" style="font-size:.6rem">⬆ Import Characters</button>
+        </div>
+      </div>
+
+      <div style="margin-top:1.2rem;padding-top:1rem;border-top:1px solid #2a1a08;">
+        <div class="section-title" style="margin-bottom:.7rem">Roll Initiative</div>
+
+        <!-- Group Initiative -->
+        <div style="background:rgba(0,0,0,.3);border:1px solid #3a2910;border-radius:2px;padding:.8rem;margin-bottom:.6rem;">
+          <div style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.15em;color:var(--gold-dim);margin-bottom:.5rem;text-transform:uppercase;">Group / Side (d6)</div>
+          <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:.78rem;color:#7a6040;margin-bottom:.6rem;">Roll one d6 — 1–3 enemies act first, 4–6 players act first. Combatants are ordered by side.</div>
+          <button class="btn btn-ghost" onclick="rollGroupInitiative()" style="font-size:.6rem;width:100%">d6 Roll Side Initiative</button>
+          <div id="grp-result" style="display:none;margin-top:.7rem;text-align:center;">
+            <div id="grp-die" style="font-family:'Cinzel Decorative',serif;font-size:2.2rem;font-weight:700;line-height:1;"></div>
+            <div id="grp-verdict" style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;margin-top:.3rem;"></div>
+          </div>
+        </div>
+
+        <!-- Individual Initiative -->
+        <div style="background:rgba(0,0,0,.3);border:1px solid #3a2910;border-radius:2px;padding:.8rem;margin-bottom:.6rem;">
+          <div style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.15em;color:var(--gold-dim);margin-bottom:.5rem;text-transform:uppercase;">Individual (d20)</div>
+          <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:.78rem;color:#7a6040;margin-bottom:.6rem;">Each combatant rolls d20 + their own Init Modifier separately.</div>
+          <div style="display:grid;grid-template-columns:1fr;gap:.4rem;margin-bottom:.5rem">
+            <div><label style="font-size:.55rem">Apply to</label>
+              <select id="ind-target">
+                <option value="all">Everyone</option>
+                <option value="player">Players only</option>
+                <option value="monster">Monsters only</option>
+                <option value="npc">NPCs only</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-ghost" onclick="rollIndividualInitiative()" style="font-size:.6rem;width:100%">d20 Roll Individual Initiative</button>
+        </div>
+
+        <!-- Contested Group Initiative -->
+        <div style="background:rgba(0,0,0,.3);border:1px solid #3a2910;border-radius:2px;padding:.8rem;margin-bottom:.6rem;">
+          <div style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.15em;color:var(--gold-dim);margin-bottom:.5rem;text-transform:uppercase;">Contested (d6 vs d6)</div>
+          <div style="font-family:'IM Fell English',serif;font-style:italic;font-size:.78rem;color:#7a6040;margin-bottom:.6rem;">Players and enemies each roll a d6. Highest side goes first. Ties re-roll automatically.</div>
+          <button class="btn btn-ghost" onclick="rollContestedInitiative()" style="font-size:.6rem;width:100%">d6 vs d6 Contested Roll</button>
+          <div id="contested-result" style="display:none;margin-top:.7rem;">
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:.4rem;text-align:center;">
+              <div>
+                <div style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.1em;color:#5aaabb;text-transform:uppercase;margin-bottom:.2rem">Players</div>
+                <div id="cont-player-roll" style="font-family:'Cinzel Decorative',serif;font-size:2rem;font-weight:700;color:#5aaabb;line-height:1;"></div>
+              </div>
+              <div style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold-dim)">vs</div>
+              <div>
+                <div style="font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.1em;color:#cc5555;text-transform:uppercase;margin-bottom:.2rem">Enemies</div>
+                <div id="cont-enemy-roll" style="font-family:'Cinzel Decorative',serif;font-size:2rem;font-weight:700;color:#cc5555;line-height:1;"></div>
+              </div>
+            </div>
+            <div id="cont-verdict" style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;text-align:center;margin-top:.5rem;padding:.4rem;border-radius:2px;"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.2rem">
+          <button class="btn btn-ghost" onclick="sortInitiative()" style="font-size:.6rem">↕ Sort by Initiative</button>
+          <button class="btn btn-danger" onclick="clearEncounter()" style="font-size:.6rem;margin-top:.2rem">✕ Clear Encounter</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Initiative List -->
+    <div>
+      <div class="turn-controls">
+        <div class="round-badge" id="round-badge">Round 1</div>
+        <button class="btn btn-primary" onclick="nextTurn()" style="font-size:.65rem">Next Turn ▶</button>
+        <button class="btn btn-ghost" onclick="resetTurns()" style="font-size:.6rem">↺ Reset Turns</button>
+        <div style="margin-left:auto;display:flex;gap:.3rem;flex-wrap:wrap;">
+          <button class="init-col-toggle active" id="toggle-init-col" onclick="toggleInitCol()" title="Show/hide Initiative Modifier column">◈ Init Mod</button>
+          <button class="init-col-toggle active" id="toggle-ac-col" onclick="toggleACCol()" title="Show/hide AC column">◈ AC</button>
+        </div>
+      </div>
+      <div class="init-list" id="init-list">
+        <div class="empty-state"><div class="empty-state-icon">⚔️</div><p>No combatants yet. Add someone to begin the encounter.</p></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- ══ JOURNAL ══ -->
@@ -481,9 +640,9 @@ function addCharacter(){
   const n = getStatCount();
   const stats = [];
   for (let i = 0; i < n; i++) {
-    const sname = (document.getElementById(`c-sname-${i}`)?.value||'').trim();
-    const sval  = document.getElementById(`c-sval-${i}`)?.value||'';
-    const smod  = (document.getElementById(`c-smod-${i}`)?.value||'').trim();
+    const sname = ((document.getElementById(`c-sname-${i}`) && document.getElementById(`c-sname-${i}`).value)||'').trim();
+    const sval  = (document.getElementById(`c-sval-${i}`) && document.getElementById(`c-sval-${i}`).value)||'';
+    const smod  = ((document.getElementById(`c-smod-${i}`) && document.getElementById(`c-smod-${i}`).value)||'').trim();
     if (sname) stats.push({ name: sname, val: sval, mod: smod });
   }
   characters.unshift({
@@ -539,9 +698,9 @@ function saveEdit(id){
   const rows  = grid ? grid.querySelectorAll('.edit-stat-row') : [];
   const stats = [];
   rows.forEach(row=>{
-    const sname = row.querySelector('.esn')?.value.trim();
-    const sval  = row.querySelector('.esv')?.value??'';
-    const smod  = row.querySelector('.esm')?.value.trim()??'';
+    const sname = row.querySelector('.esn') ? (row.querySelector('.esn').value.trim()) : '';
+    const sval  = row.querySelector('.esv') ? (row.querySelector('.esv').value || '') : '';
+    const smod  = row.querySelector('.esm') ? (row.querySelector('.esm').value.trim() || '') : '';
     if(sname) stats.push({name:sname, val:sval, mod:smod});
   });
   c.stats  = stats;
@@ -1027,7 +1186,7 @@ async function driveBackup(){
       headers:{'Authorization':'Bearer '+token,'Content-Type':`multipart/related; boundary="${boundary}"`},
       body
     });
-    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||res.statusText);}
+    if(!res.ok){const err=await res.json();throw new Error((err.error && err.error.message)||res.statusText);}
     toast(`✦ Backed up to Drive: ${filename}`);
     setDriveStatus('ok',`✓ Last backup: ${new Date().toLocaleTimeString()}`);
   }catch(e){
@@ -1064,11 +1223,307 @@ function applyModToggle(){
   }
 }
 
+// ── Initiative Tracker ──
+// ── Initiative column toggles ──
+let showInitCol = localStorage.getItem('chronicle_show_init') !== 'false';
+let showACCol   = localStorage.getItem('chronicle_show_ac')   !== 'false';
+
+function applyInitToggles(){
+  const tab = document.getElementById('tab-initiative');
+  if(!tab) return;
+  if(showInitCol){ tab.classList.remove('hide-init-col'); }
+  else { tab.classList.add('hide-init-col'); }
+  if(showACCol){ tab.classList.remove('hide-ac-col'); }
+  else { tab.classList.add('hide-ac-col'); }
+  const bi = document.getElementById('toggle-init-col');
+  const ba = document.getElementById('toggle-ac-col');
+  if(bi) bi.classList.toggle('active', showInitCol);
+  if(ba) ba.classList.toggle('active', showACCol);
+}
+function toggleInitCol(){
+  showInitCol = !showInitCol;
+  localStorage.setItem('chronicle_show_init', showInitCol);
+  applyInitToggles();
+}
+function toggleACCol(){
+  showACCol = !showACCol;
+  localStorage.setItem('chronicle_show_ac', showACCol);
+  applyInitToggles();
+}
+
+let combatants = [];
+let currentTurn = 0;
+let round = 1;
+
+function addCombatant(data){
+  const name = (data && data.name) ? data.name : document.getElementById('i-name').value.trim();
+  if(!name){toast('⚠ Name is required',true);return;}
+  const initMod = (data && data.initMod !== undefined) ? data.initMod : (parseInt(document.getElementById('i-init').value)||0);
+  const ac      = (data && data.ac  !== undefined) ? data.ac  : (parseInt(document.getElementById('i-ac').value)||0);
+  const hp      = (data && data.hp  !== undefined) ? data.hp  : (parseInt(document.getElementById('i-hp').value)||10);
+  const type    = (data && data.type) ? data.type : document.getElementById('i-type').value;
+  combatants.push({id:Date.now()+Math.random(), name, initMod:initMod, initScore:0, ac, hp, maxhp:hp, type, defeated:false});
+  sortInitiative(false);
+  renderInitiative();
+  if(!data){
+    ['i-name','i-init','i-ac','i-hp'].forEach(id=>document.getElementById(id).value='');
+    toast(`✦ ${name} added to initiative`);
+  }
+}
+
+function importFromChars(){
+  if(!characters.length){toast('⚠ No characters in your roster yet',true);return;}
+  let added=0;
+  characters.forEach(c=>{
+    if(!combatants.find(x=>x.name===c.name)){
+      combatants.push({id:Date.now()+Math.random(),name:c.name,initMod:0,initScore:0,ac:0,hp:c.hp,maxhp:c.maxhp,type:'player',defeated:false});
+      added++;
+    }
+  });
+  sortInitiative(false);
+  renderInitiative();
+  toast(`✦ Imported ${added} character${added!==1?'s':''} — set their initiative!`);
+}
+
+function rollGroupInitiative(){
+  if(!combatants.length){toast('⚠ Add combatants first',true);return;}
+  const roll = Math.floor(Math.random()*6)+1;
+  const playersFirst = roll >= 4;
+
+  // Assign initiative values by side:
+  // Winning side gets 20, losing side gets 10 — keeps them grouped and sorted cleanly
+  combatants.forEach(c=>{
+    if(c.type === 'player'){
+      c.initScore = playersFirst ? 20 : 10;
+    } else {
+      // monsters and npcs are the enemy side
+      c.initScore = playersFirst ? 10 : 20;
+    }
+  });
+
+  sortInitiative(false);
+  renderInitiative();
+
+  const resultEl  = document.getElementById('grp-result');
+  const dieEl     = document.getElementById('grp-die');
+  const verdictEl = document.getElementById('grp-verdict');
+  resultEl.style.display = 'block';
+  dieEl.textContent = roll;
+
+  if(playersFirst){
+    dieEl.style.color = '#6aaa6a';
+    verdictEl.style.color = '#6aaa6a';
+    verdictEl.textContent = '4–6 · Players act first!';
+  } else {
+    dieEl.style.color = '#cc5555';
+    verdictEl.style.color = '#cc5555';
+    verdictEl.textContent = '1–3 · Enemies act first!';
+  }
+
+  toast('d6 rolled — ' + (playersFirst ? 'Players go first!' : 'Enemies go first!'));
+}
+
+function rollContestedInitiative(){
+  if(!combatants.length){toast('⚠ Add combatants first',true);return;}
+
+  // Keep rolling until no tie
+  let playerRoll, enemyRoll;
+  let tries = 0;
+  do {
+    playerRoll = Math.floor(Math.random()*6)+1;
+    enemyRoll  = Math.floor(Math.random()*6)+1;
+    tries++;
+  } while(playerRoll === enemyRoll && tries < 10);
+
+  const playersFirst = playerRoll > enemyRoll;
+
+  // Assign sides
+  combatants.forEach(c=>{
+    if(c.type === 'player'){
+      c.initScore = playersFirst ? 20 : 10;
+    } else {
+      c.initScore = playersFirst ? 10 : 20;
+    }
+  });
+
+  sortInitiative(false);
+  renderInitiative();
+
+  // Update UI
+  const resultEl  = document.getElementById('contested-result');
+  const pRollEl   = document.getElementById('cont-player-roll');
+  const eRollEl   = document.getElementById('cont-enemy-roll');
+  const verdictEl = document.getElementById('cont-verdict');
+
+  resultEl.style.display = 'block';
+  pRollEl.textContent = playerRoll;
+  eRollEl.textContent = enemyRoll;
+
+  if(playersFirst){
+    verdictEl.textContent   = '⚔ Players win initiative!';
+    verdictEl.style.color   = '#6aaa6a';
+    verdictEl.style.background = 'rgba(30,70,30,.3)';
+    pRollEl.style.color = '#6aaa6a';
+    eRollEl.style.color = '#cc5555';
+  } else {
+    verdictEl.textContent   = '💀 Enemies win initiative!';
+    verdictEl.style.color   = '#cc5555';
+    verdictEl.style.background = 'rgba(70,20,20,.3)';
+    pRollEl.style.color = '#5aaabb';
+    eRollEl.style.color = '#cc5555';
+  }
+
+  if(tries > 1){
+    verdictEl.textContent += ' (tie re-rolled '+tries+'x)';
+  }
+
+  toast(playersFirst ? '⚔ Players win the contested roll!' : '💀 Enemies win the contested roll!');
+}
+
+function rollIndividualInitiative(){
+  if(!combatants.length){toast('⚠ Add combatants first',true);return;}
+  const target = document.getElementById('ind-target').value;
+  combatants.forEach(c=>{
+    if(target==='all' || c.type===target){
+      const roll = Math.floor(Math.random()*20)+1;
+      c.initScore = roll + (c.initMod||0);
+    }
+  });
+  sortInitiative(false);
+  renderInitiative();
+  toast('d20 Individual initiative rolled!');
+}
+
+function sortInitiative(doToast=true){
+  combatants.sort((a,b)=>b.initScore-a.initScore);
+  renderInitiative();
+  if(doToast) toast('↕ Sorted by initiative');
+}
+
+function removeCombatant(id){
+  combatants=combatants.filter(c=>c.id!==id);
+  if(currentTurn>=combatants.length) currentTurn=0;
+  renderInitiative();
+}
+
+function toggleDefeated(id){
+  const c=combatants.find(c=>c.id===id);
+  if(c) c.defeated=!c.defeated;
+  renderInitiative();
+}
+
+function adjustHP(id, delta){
+  const c=combatants.find(c=>c.id===id); if(!c)return;
+  const inp=document.getElementById(`i-dmg-${id}`);
+  const val=parseInt(inp ? inp.value : 0)||0;
+  c.hp=Math.max(0,Math.min(c.maxhp, c.hp + val*delta));
+  if(c.hp===0) c.defeated=true;
+  renderInitiative();
+}
+
+function nextTurn(){
+  if(!combatants.length) return;
+  const alive=combatants.filter(c=>!c.defeated);
+  if(!alive.length){toast('All combatants defeated!');return;}
+  // advance to next non-defeated
+  let attempts=0;
+  do {
+    currentTurn=(currentTurn+1)%combatants.length;
+    attempts++;
+    if(attempts>combatants.length){ break; }
+  } while(combatants[currentTurn].defeated);
+  // check if we wrapped a full round
+  if(currentTurn===0 || (currentTurn < combatants.filter((_,i)=>i<currentTurn).length)){
+    // detect round wrap by tracking index
+  }
+  // simpler round tracking: increment round when turn wraps to index 0 or below original
+  renderInitiative();
+}
+
+function resetTurns(){
+  currentTurn=0; round=1;
+  document.getElementById('round-badge').textContent='Round 1';
+  renderInitiative();
+  toast('↺ Turns reset to Round 1');
+}
+
+function clearEncounter(){
+  if(!combatants.length) return;
+  combatants=[]; currentTurn=0; round=1;
+  document.getElementById('round-badge').textContent='Round 1';
+  renderInitiative();
+  toast('✕ Encounter cleared');
+}
+
+function renderInitiative(){
+  const el=document.getElementById('init-list');
+  if(!combatants.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚔️</div><p>No combatants yet. Add someone to begin the encounter.</p></div>`;
+    return;
+  }
+  el.innerHTML=combatants.map((c,i)=>{
+    const hpPct=Math.max(0,Math.min(100,(c.hp/c.maxhp)*100));
+    const isActive=i===currentTurn&&!c.defeated;
+    const typeLabel={player:'Player',monster:'Monster',npc:'NPC'}[c.type]||c.type;
+    return`<div class="init-row${isActive?' active-turn':''}${c.defeated?' defeated':''}">
+      <div class="init-num">
+        ${c.initScore ? `<span style="font-size:.75rem;display:block;line-height:1.1">${c.initScore}</span>` : ''}
+        <span style="font-size:.65rem;color:var(--gold-dim);font-family:'Cinzel',serif;letter-spacing:.05em">${c.initMod >= 0 ? '+' : ''}${c.initMod !== undefined ? c.initMod : '0'}</span>
+      </div>
+      <div>
+        <div class="init-name">${c.name}</div>
+        <span class="init-type-badge type-${c.type}">${typeLabel}</span>
+      </div>
+      <div class="init-stat init-ac-cell">
+        <span class="init-stat-label">AC</span>
+        <span class="init-stat-val">${c.ac||'—'}</span>
+      </div>
+      <div class="init-stat">
+        <span class="init-stat-label">HP</span>
+        <span class="init-stat-val">${c.hp}/${c.maxhp}</span>
+        <div class="init-hp-bar"><div class="init-hp-fill" style="width:${hpPct}%"></div></div>
+      </div>
+      <div class="init-actions">
+        <input class="init-dmg-input" type="number" id="i-dmg-${c.id}" value="1" min="1" style="width:48px;text-align:center;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:.85rem;padding:.25rem .3rem;outline:none;border-radius:2px;"/>
+        <button class="btn-heal" onclick="adjustHP(${c.id},1)">Heal</button>
+        <button class="btn-dmg"  onclick="adjustHP(${c.id},-1)">Dmg</button>
+        <button class="btn-defeat" onclick="toggleDefeated(${c.id})">${c.defeated?'Revive':'Down'}</button>
+        <button class="btn-defeat" onclick="removeCombatant(${c.id})" style="color:#7a3030;border-color:#5a2020;">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Track rounds properly via nextTurn override
+(function(){
+  const _next=nextTurn;
+  let _prevTurn=0;
+  nextTurn=function(){
+    if(!combatants.length)return;
+    _prevTurn=currentTurn;
+    const alive=combatants.filter(c=>!c.defeated);
+    if(!alive.length){toast('All combatants defeated!');return;}
+    let attempts=0;
+    do{
+      currentTurn=(currentTurn+1)%combatants.length;
+      attempts++;
+      if(attempts>combatants.length)break;
+    }while(combatants[currentTurn] && combatants[currentTurn].defeated);
+    if(currentTurn<=_prevTurn && attempts<combatants.length){
+      round++;
+      document.getElementById('round-badge').textContent=`Round ${round}`;
+      toast(`⚔️ Round ${round} begins`);
+    }
+    renderInitiative();
+  };
+})();
+
 // ── Init ──
 renderChars(); renderJournal(); renderHistory();
 if(driveClientId) document.getElementById('drive-client-id').value=driveClientId;
 setDriveStatus('warn','○ Not connected — paste your Client ID and click Connect');
 applyModToggle();
+applyInitToggles();
 </script>
 </body>
 </html>
