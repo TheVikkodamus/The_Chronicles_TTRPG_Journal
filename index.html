@@ -24,7 +24,7 @@ body{background-color:#0d0a06;background-image:radial-gradient(ellipse at 20% 10
 header{text-align:center;padding:2.5rem 1rem 1rem;position:relative;}
 header::before,header::after{content:'';position:absolute;left:50%;transform:translateX(-50%);width:80%;max-width:700px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
 header::before{top:0;}header::after{bottom:0;}
-.logo-rune{font-size:2rem;margin-bottom:.3rem;opacity:.7;filter:drop-shadow(0 0 8px var(--gold));animation:flicker 4s infinite;}
+.logo-rune{margin-bottom:.5rem;opacity:.85;animation:flicker 4s infinite;}
 @keyframes flicker{0%,100%{opacity:.7}50%{opacity:.55}75%{opacity:.72}85%{opacity:.5}}
 h1{font-family:'Cinzel Decorative',serif;font-size:clamp(1.6rem,5vw,2.8rem);font-weight:700;color:var(--gold-light);text-shadow:0 0 20px rgba(200,168,75,.4),0 2px 4px rgba(0,0,0,.8);letter-spacing:.05em;line-height:1.1;}
 .subtitle{font-family:'IM Fell English',serif;font-style:italic;color:var(--gold-dim);font-size:.95rem;margin-top:.4rem;letter-spacing:.1em;}
@@ -486,7 +486,12 @@ select option{background:#1a0d05;}
 </head>
 <body>
 <header>
-  <div class="logo-rune">⚔️</div>
+  <div class="logo-rune">
+    <img src="https://raw.githubusercontent.com/TheVikkodamus/The_Chronicless_TTRPG_Journal/main/assets/quill.jpg"
+         alt="The Chronicles"
+         style="width:130px;height:130px;object-fit:contain;display:block;margin:0 auto;border-radius:6px;"/>
+  </div>
+  </div>
   <h1>The Chronicles</h1>
   <p class="subtitle">A Tome for Heroes &amp; Their Tales</p>
 </header>
