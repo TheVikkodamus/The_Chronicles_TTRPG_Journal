@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0d0a06"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>The Chronicle — TTRPG Journal</title>
+<title>The Chronicless — TTRPG Web App</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -419,7 +419,7 @@ select option{background:#1a0d05;}
 <body>
 <header>
   <div class="logo-rune">⚔️</div>
-  <h1>The Chronicle</h1>
+  <h1>The Chronicless</h1>
   <p class="subtitle">A Tome for Heroes &amp; Their Tales</p>
 </header>
 <nav id="nav">
@@ -722,7 +722,7 @@ select option{background:#1a0d05;}
 <!-- ══ BACKUP & EXPORT ══ -->
 <div class="tab-panel" id="tab-backup">
   <div class="card" style="margin-bottom:1.5rem">
-    <div class="section-title">Chronicle Contents</div>
+    <div class="section-title">Chronicless Contents</div>
     <div class="backup-stats" id="backup-stats">Open this tab to see stats</div>
   </div>
   <div class="backup-grid">
@@ -759,7 +759,7 @@ select option{background:#1a0d05;}
     <div class="backup-card" style="grid-column:1/-1">
       <span class="backup-icon">🔵</span>
       <div class="backup-title">Google Drive Backup</div>
-      <div class="backup-desc">Upload your Chronicle backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
+      <div class="backup-desc">Upload your Chronicless' backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
       <div id="drive-status-wrap"></div>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem">
         <button class="btn btn-drive" id="drive-backup-btn" onclick="driveBackup()" disabled>🔵 Backup to Drive</button>
@@ -789,7 +789,7 @@ select option{background:#1a0d05;}
 // ── State ──
 let characters=[], journal=[], rollHistory=[], journalFilter='all';
 let driveAccessToken=null;
-let driveClientId=localStorage.getItem('chronicle_client_id')||'';
+let driveClientId=localStorage.getItem('Chronicles_client_id')||'';
 
 // ── Nav ──
 document.querySelectorAll('.nav-btn').forEach(btn=>{
@@ -865,7 +865,7 @@ function addCharacter(){
     const m=document.getElementById(`c-smod-${i}`);
     if(v) v.value=10; if(m) m.value='';
   }
-  toast('✦ Character added to the Chronicle');
+  toast('✦ Character added to the Chronicles');
 }
 function deleteCharacter(id){characters=characters.filter(c=>c.id!==id);renderChars();}
 function toggleChar(id){
@@ -1047,7 +1047,7 @@ function addEntry(){
   journal.unshift({id:Date.now(),title,body,tag:document.getElementById('j-tag').value,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});
   renderJournal();
   document.getElementById('j-title').value='';document.getElementById('j-body').value='';
-  toast('✦ Entry written to the Chronicle');
+  toast('✦ Entry written to the Chronicles');
 }
 function deleteEntry(id){journal=journal.filter(e=>e.id!==id);renderJournal();}
 function filterEntries(btn,filter){
@@ -1058,7 +1058,7 @@ function filterEntries(btn,filter){
 function renderJournal(){
   const el=document.getElementById('journal-list');
   const entries=journalFilter==='all'?journal:journal.filter(e=>e.tag===journalFilter);
-  if(!entries.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📜</div><p>${journal.length?'No entries match this filter.':'The Chronicle awaits your first entry.'}</p></div>`;return;}
+  if(!entries.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📜</div><p>${journal.length?'No entries match this filter.':'The Chronicles awaits your first entry.'}</p></div>`;return;}
   el.innerHTML=entries.map(e=>`<div class="journal-entry">
     <div class="entry-header">
       <div><span class="entry-tag tag-${e.tag}">${tagLabel[e.tag]}</span><div class="entry-title" style="margin-top:.3rem">${e.title}</div></div>
@@ -1141,7 +1141,7 @@ function downloadJSON(){
   const blob=new Blob([JSON.stringify(getBackupData(),null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download=`chronicle-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.href=url; a.download=`Chronicles-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click(); URL.revokeObjectURL(url);
   toast('✦ Backup downloaded');
 }
@@ -1157,7 +1157,7 @@ function restoreJSON(e){
       const p=document.getElementById('restore-preview');
       p.style.display='block';
       p.innerHTML=`✦ Restored: ${characters.length} characters, ${journal.length} journal entries, ${rollHistory.length} rolls.<br><em style="color:#7a6428;font-size:.8rem">Exported ${new Date(data.exportedAt).toLocaleString()}</em>`;
-      toast('✦ Chronicle restored from backup');
+      toast('✦ Chronicles restored from backup');
     }catch{toast('⚠ Invalid backup file',true);}
   };
   reader.readAsText(file); e.target.value='';
@@ -1187,7 +1187,7 @@ async function exportPDF(){
   // Title page
   drawBg(); y=72;
   doc.setFont('times','bolditalic'); doc.setFontSize(34); doc.setTextColor(232,201,106);
-  doc.text('The Chronicle',W/2,y,{align:'center'}); y+=12;
+  doc.text('The Chronicles',W/2,y,{align:'center'}); y+=12;
   doc.setFont('times','italic'); doc.setFontSize(12); doc.setTextColor(120,96,38);
   doc.text('A Tome for Heroes & Their Tales',W/2,y,{align:'center'}); y+=20;
   doc.setDrawColor(200,168,75); doc.setLineWidth(0.4);
@@ -1277,7 +1277,7 @@ async function exportPDF(){
   }
   bar.style.width='95%';
   await new Promise(r=>setTimeout(r,100));
-  doc.save(`chronicle-${new Date().toISOString().slice(0,10)}.pdf`);
+  doc.save(`Chronicles-${new Date().toISOString().slice(0,10)}.pdf`);
   bar.style.width='100%';
   setTimeout(()=>{progress.style.display='none';bar.style.width='0';},900);
   toast('✦ PDF exported');
@@ -1289,7 +1289,7 @@ let driveTokenExpiry = 0;      // ms timestamp when current token expires
 
 function saveClientId(){
   driveClientId=document.getElementById('drive-client-id').value.trim();
-  localStorage.setItem('chronicle_client_id',driveClientId);
+  localStorage.setItem('Chronicles_client_id',driveClientId);
 }
 function setDriveStatus(type,msg){
   const map={ok:'status-ok',warn:'status-warn',err:'status-err'};
@@ -1299,7 +1299,7 @@ function setDriveStatus(type,msg){
 function initDrive(){
   const id=document.getElementById('drive-client-id').value.trim()||driveClientId;
   if(!id){toast('⚠ Paste your Client ID first',true);return;}
-  driveClientId=id; localStorage.setItem('chronicle_client_id',id);
+  driveClientId=id; localStorage.setItem('Chronicles_client_id',id);
   if(!window.google||!window.google.accounts){
     setDriveStatus('err','✗ Google library not loaded — check your internet connection');
     return;
@@ -1376,9 +1376,9 @@ async function driveBackup(){
   try{
     // Always get a fresh token — silently refreshes if expired
     const token = await getFreshToken();
-    const filename=`chronicle-backup-${new Date().toISOString().slice(0,10)}.json`;
+    const filename=`Chronicles-backup-${new Date().toISOString().slice(0,10)}.json`;
     const content=JSON.stringify(getBackupData(),null,2);
-    const boundary='--------ChronicleBackupBoundary314159';
+    const boundary='--------ChroniclesBackupBoundary314159';
     const body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:filename,mimeType:'application/json'})}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
     const res=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{
       method:'POST',
@@ -1397,11 +1397,11 @@ async function driveBackup(){
 }
 
 // ── Modifier toggle ──
-let showMods = localStorage.getItem('chronicle_show_mods') !== 'false';
+let showMods = localStorage.getItem('Chronicles_show_mods') !== 'false';
 
 function toggleMods(){
   showMods = !showMods;
-  localStorage.setItem('chronicle_show_mods', showMods);
+  localStorage.setItem('Chronicles_show_mods', showMods);
   applyModToggle();
   renderChars(); // re-render cards to reflect change
 }
@@ -1424,10 +1424,10 @@ function applyModToggle(){
 
 // ── Initiative Tracker ──
 // ── Initiative column toggles ──
-let showInitCol = localStorage.getItem('chronicle_show_init') !== 'false';
-let showACCol   = localStorage.getItem('chronicle_show_ac')   !== 'false';
-let showDefCol  = localStorage.getItem('chronicle_show_def')  !== 'false';
-let showArmorCol= localStorage.getItem('chronicle_show_armor')!== 'false';
+let showInitCol = localStorage.getItem('Chronicles_show_init') !== 'false';
+let showACCol   = localStorage.getItem('Chronicles_show_ac')   !== 'false';
+let showDefCol  = localStorage.getItem('Chronicles_show_def')  !== 'false';
+let showArmorCol= localStorage.getItem('Chronicles_show_armor')!== 'false';
 let defModeActive = false;
 
 function applyInitToggles(){
@@ -1446,10 +1446,10 @@ function applyInitToggles(){
   if(bd) bd.classList.toggle('active', showDefCol);
   if(bm) bm.classList.toggle('active', showArmorCol);
 }
-function toggleInitCol(){  showInitCol  = !showInitCol;  localStorage.setItem('chronicle_show_init',  showInitCol);  applyInitToggles(); }
-function toggleACCol(){    showACCol    = !showACCol;    localStorage.setItem('chronicle_show_ac',    showACCol);    applyInitToggles(); }
-function toggleDefCol(){   showDefCol   = !showDefCol;   localStorage.setItem('chronicle_show_def',   showDefCol);   applyInitToggles(); }
-function toggleArmorCol(){ showArmorCol = !showArmorCol; localStorage.setItem('chronicle_show_armor', showArmorCol); applyInitToggles(); }
+function toggleInitCol(){  showInitCol  = !showInitCol;  localStorage.setItem('Chronicles_show_init',  showInitCol);  applyInitToggles(); }
+function toggleACCol(){    showACCol    = !showACCol;    localStorage.setItem('Chronicles_show_ac',    showACCol);    applyInitToggles(); }
+function toggleDefCol(){   showDefCol   = !showDefCol;   localStorage.setItem('Chronicles_show_def',   showDefCol);   applyInitToggles(); }
+function toggleArmorCol(){ showArmorCol = !showArmorCol; localStorage.setItem('Chronicles_show_armor', showArmorCol); applyInitToggles(); }
 function toggleDefMode(){
   defModeActive = !defModeActive;
   const btn = document.getElementById('toggle-def-mode');
