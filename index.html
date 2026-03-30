@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>The Chronicle — TTRPG Journal</title>
+<title>The Chronicles — TTRPG Web App</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -265,9 +265,9 @@ select option{background:#1a0d05;}
 </head>
 <body>
 <header>
-  <div class="logo-rune">⚔️</div>
-  <h1>The Chronicle</h1>
-  <p class="subtitle">A Tome for Heroes &amp; Their Tales</p>
+  <div class="logo-rune"></div>
+  <h1>The Chronicles</h1>
+  <p class="subtitle">A TTRPG Web App</p>
 </header>
 <nav id="nav">
   <button class="nav-btn active" data-tab="characters">Characters</button>
@@ -506,8 +506,8 @@ select option{background:#1a0d05;}
       <div class="form-full">
         <label>Entry</label>
         <div class="tab-toggle">
-          <button id="j-tab-write" class="active" onclick="switchJournalTab('write')">✎ Write</button>
-          <button id="j-tab-preview" onclick="switchJournalTab('preview')">👁 Preview</button>
+          <button id="j-tab-write" class="active" onclick="switchJournalTab('write')"> Write</button>
+          <button id="j-tab-preview" onclick="switchJournalTab('preview')"> Preview</button>
         </div>
         <textarea id="j-body" placeholder="The party arrived at Thornwall as smoke still curled...&#10;&#10;Supports **bold**, *italic*, # Headings, - lists, > quotes, and more." style="min-height:130px"></textarea>
         <div class="md-preview-wrap" id="j-preview"></div>
