@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0d0a06"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>The Chronicles — TTRPG Web App</title>
+<title>The Chronicles — TTRPG Journal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -263,6 +263,74 @@ select option{background:#1a0d05;}
 .turn-controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
 .round-badge{font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--gold-light);padding:.4rem .9rem;border:1px solid var(--gold-dim);background:rgba(0,0,0,.3);border-radius:2px;white-space:nowrap;}
 .init-dmg-input{width:52px;text-align:center;font-size:.85rem;padding:.3rem .4rem;}
+
+/* ── Torch Timer ── */
+.torch-bar{
+  background:var(--panel);border:1px solid #3a2910;border-radius:var(--radius);
+  padding:.9rem 1rem;margin-bottom:1rem;position:relative;overflow:hidden;
+}
+.torch-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold-dim),transparent);}
+.torch-header{display:flex;align-items:center;justify-content:space-between;gap:.6rem;flex-wrap:wrap;margin-bottom:.7rem;}
+.torch-title{font-family:'Cinzel',serif;font-size:.65rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);}
+.torch-preset-row{display:flex;gap:.3rem;flex-wrap:wrap;}
+.torch-preset{font-family:'Cinzel',serif;font-size:.55rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .6rem;background:transparent;border:1px solid #3a2910;color:var(--gold-dim);cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap;}
+.torch-preset:hover{border-color:var(--gold-dim);color:var(--gold);}
+.torch-preset.active-preset{border-color:var(--gold);color:var(--gold);background:rgba(200,168,75,.08);}
+.torch-display{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.torch-flame{font-size:1.8rem;line-height:1;animation:torchFlicker 1.5s infinite;flex-shrink:0;}
+@keyframes torchFlicker{0%,100%{opacity:1;transform:scale(1)}30%{opacity:.85;transform:scale(.97) rotate(-2deg)}60%{opacity:.9;transform:scale(1.03) rotate(1deg)}80%{opacity:.8;transform:scale(.98)}}
+.torch-flame.dim{animation:none;opacity:.3;filter:grayscale(1);}
+.torch-time{font-family:'Cinzel Decorative',serif;font-size:2.2rem;font-weight:700;line-height:1;transition:color .5s;}
+.torch-time.plenty{color:var(--gold-light);text-shadow:0 0 20px rgba(200,168,75,.5);}
+.torch-time.low{color:#e8a030;text-shadow:0 0 20px rgba(232,160,48,.6);}
+.torch-time.critical{color:var(--blood-light);text-shadow:0 0 20px rgba(192,57,43,.7);animation:critPulse 1s infinite;}
+@keyframes critPulse{0%,100%{opacity:1}50%{opacity:.6}}
+.torch-time.out{color:#5a3a2a;text-shadow:none;}
+.torch-track-wrap{flex:1;min-width:100px;}
+.torch-track{height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;border:1px solid #3a2910;margin-bottom:.35rem;}
+.torch-fill{height:100%;border-radius:3px;transition:width .9s ease,background .5s;background:linear-gradient(90deg,var(--blood),var(--gold));}
+.torch-label{font-family:'Cinzel',serif;font-size:.55rem;letter-spacing:.1em;color:var(--gold-dim);text-transform:uppercase;}
+.torch-controls{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.7rem;align-items:center;}
+.torch-btn{font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .9rem;border:none;cursor:pointer;border-radius:2px;transition:all .15s;min-height:36px;}
+.torch-btn-start{background:linear-gradient(135deg,#3a6a1a,#6aaa2a);color:#ddffd0;box-shadow:0 2px 8px rgba(90,160,40,.3);}
+.torch-btn-start:hover{box-shadow:0 3px 12px rgba(90,160,40,.5);transform:translateY(-1px);}
+.torch-btn-pause{background:linear-gradient(135deg,#6a5a1a,#c8a030);color:#fff8d0;}
+.torch-btn-pause:hover{transform:translateY(-1px);}
+.torch-btn-reset{background:transparent;color:var(--gold-dim);border:1px solid #3a2910;font-size:.6rem;min-height:36px;padding:.4rem .8rem;}
+.torch-btn-reset:hover{border-color:var(--gold-dim);color:var(--gold);}
+.torch-custom-row{display:flex;align-items:center;gap:.4rem;margin-top:.5rem;flex-wrap:wrap;}
+.torch-custom-row label{margin:0;font-size:.55rem;white-space:nowrap;}
+.torch-custom-row input{width:52px;text-align:center;font-size:.9rem;padding:.3rem .4rem;min-height:34px;}
+.torch-out-banner{display:none;text-align:center;padding:.5rem;background:rgba(139,26,26,.25);border:1px solid var(--blood);border-radius:2px;font-family:'Cinzel',serif;font-size:.75rem;font-weight:700;letter-spacing:.1em;color:var(--blood-light);margin-top:.6rem;animation:critPulse .8s infinite;}
+
+/* ── Spell Light Orb ── */
+.spell-orb-wrap{width:2rem;height:2rem;flex-shrink:0;position:relative;display:none;align-items:center;justify-content:center;}
+.spell-orb-wrap.visible{display:flex;}
+.spell-orb{
+  width:1.4rem;height:1.4rem;border-radius:50%;
+  background:radial-gradient(circle at 38% 35%,#ffffff,#a8d8ff 40%,#4488ff 75%,#2244cc);
+  box-shadow:0 0 8px 4px rgba(100,160,255,.7),0 0 20px 8px rgba(80,130,255,.4),0 0 40px 16px rgba(60,100,255,.2);
+  animation:orbPulse 2s ease-in-out infinite,orbFloat 3s ease-in-out infinite;
+}
+.spell-orb::after{
+  content:'';position:absolute;top:18%;left:22%;
+  width:30%;height:20%;border-radius:50%;
+  background:rgba(255,255,255,.7);
+  filter:blur(2px);
+}
+@keyframes orbPulse{
+  0%,100%{box-shadow:0 0 8px 4px rgba(100,160,255,.7),0 0 20px 8px rgba(80,130,255,.4),0 0 40px 16px rgba(60,100,255,.2);}
+  50%{box-shadow:0 0 12px 6px rgba(120,180,255,.9),0 0 30px 14px rgba(100,160,255,.6),0 0 60px 24px rgba(80,130,255,.3);}
+}
+@keyframes orbFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-3px);}
+}
+.spell-orb.dim{
+  background:radial-gradient(circle at 38% 35%,#555,#333);
+  box-shadow:0 0 4px 2px rgba(50,50,80,.4);
+  animation:none;
+}
 @media(max-width:500px){.stats-row{grid-template-columns:repeat(3,1fr)}.form-grid{grid-template-columns:1fr 1fr}}
 
 /* ══════════════════════════════════════
@@ -616,6 +684,37 @@ select option{background:#1a0d05;}
           <button class="init-col-toggle" id="toggle-def-mode" onclick="toggleDefMode()" title="When ON damage is reduced by each target's Defense rating">🛡 Defense Mode: Off</button>
         </div>
       </div>
+      <!-- Torch Timer -->
+      <div class="torch-bar">
+        <div class="torch-header">
+          <span class="torch-title">🕯 Light Source Timer</span>
+          <div class="torch-preset-row">
+            <button class="torch-preset active-preset" onclick="setTorchPreset(60,'Torch',this)">Torch 1h</button>
+            <button class="torch-preset" onclick="setTorchPreset(60,'Spell: Light',this)">Spell: Light 1h</button>
+            <button class="torch-preset" onclick="setTorchPreset(10,'Candle',this)">Candle 10m</button>
+          </div>
+        </div>
+        <div class="torch-display">
+          <div class="torch-flame" id="torch-flame">🔥</div>
+          <div class="spell-orb-wrap" id="spell-orb-wrap"><div class="spell-orb" id="spell-orb"></div></div>
+          <div class="torch-time plenty" id="torch-time">60:00</div>
+          <div class="torch-track-wrap">
+            <div class="torch-track"><div class="torch-fill" id="torch-fill" style="width:100%"></div></div>
+            <div class="torch-label" id="torch-label">Torch — Ready</div>
+          </div>
+        </div>
+        <div class="torch-controls">
+          <button class="torch-btn torch-btn-start" id="torch-start-btn" onclick="torchStartPause()">▶ Start</button>
+          <button class="torch-btn torch-btn-reset" onclick="torchReset()">↺ Reset</button>
+          <div class="torch-custom-row">
+            <label>Custom</label>
+            <input type="number" id="torch-custom-min" min="1" max="480" placeholder="min" value="60"/>
+            <button class="torch-btn torch-btn-reset" onclick="setTorchCustom()">Set</button>
+          </div>
+        </div>
+        <div class="torch-out-banner" id="torch-out-banner">🔥 The torch has gone out — darkness falls!</div>
+      </div>
+
       <div class="init-list" id="init-list">
         <div class="empty-state"><div class="empty-state-icon">⚔️</div><p>No combatants yet. Add someone to begin the encounter.</p></div>
       </div>
@@ -759,7 +858,7 @@ select option{background:#1a0d05;}
     <div class="backup-card" style="grid-column:1/-1">
       <span class="backup-icon">🔵</span>
       <div class="backup-title">Google Drive Backup</div>
-      <div class="backup-desc">Upload your Chronicles' backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
+      <div class="backup-desc">Upload your Chronicles backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
       <div id="drive-status-wrap"></div>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem">
         <button class="btn btn-drive" id="drive-backup-btn" onclick="driveBackup()" disabled>🔵 Backup to Drive</button>
@@ -1423,6 +1522,150 @@ function applyModToggle(){
 }
 
 // ── Initiative Tracker ──
+// ── Torch Timer ──
+let torchTotal    = 60 * 60; // seconds
+let torchRemaining= 60 * 60;
+let torchInterval = null;
+let torchRunning  = false;
+let torchName     = 'Torch';
+
+function setTorchPreset(minutes, name, btn){
+  torchReset();
+  torchTotal     = minutes * 60;
+  torchRemaining = torchTotal;
+  torchName      = name;
+  document.querySelectorAll('.torch-preset').forEach(b => b.classList.remove('active-preset'));
+  if(btn) btn.classList.add('active-preset');
+  updateTorchDisplay();
+}
+
+function setTorchCustom(){
+  const mins = parseInt(document.getElementById('torch-custom-min').value)||60;
+  document.querySelectorAll('.torch-preset').forEach(b => b.classList.remove('active-preset'));
+  torchReset();
+  torchTotal     = mins * 60;
+  torchRemaining = torchTotal;
+  torchName      = mins + 'm Light';
+  updateTorchDisplay();
+}
+
+function torchStartPause(){
+  if(torchRemaining <= 0) return;
+  if(torchRunning){
+    clearInterval(torchInterval);
+    torchRunning = false;
+    document.getElementById('torch-start-btn').textContent = '▶ Resume';
+    document.getElementById('torch-start-btn').className   = 'torch-btn torch-btn-start';
+    document.getElementById('torch-label').textContent     = torchName + ' — Paused';
+  } else {
+    torchRunning  = true;
+    torchInterval = setInterval(torchTick, 1000);
+    document.getElementById('torch-start-btn').textContent = '⏸ Pause';
+    document.getElementById('torch-start-btn').className   = 'torch-btn torch-btn-pause';
+    document.getElementById('torch-label').textContent     = torchName + ' — Burning';
+  }
+}
+
+function torchTick(){
+  torchRemaining--;
+  if(torchRemaining <= 0){
+    torchRemaining = 0;
+    clearInterval(torchInterval);
+    torchRunning = false;
+    torchOut();
+  }
+  updateTorchDisplay();
+}
+
+function torchReset(){
+  clearInterval(torchInterval);
+  torchRunning   = false;
+  torchRemaining = torchTotal;
+  const btn   = document.getElementById('torch-start-btn');
+  const flame = document.getElementById('torch-flame');
+  const orb   = document.getElementById('spell-orb');
+  const banner= document.getElementById('torch-out-banner');
+  if(btn)   { btn.textContent = '▶ Start'; btn.className = 'torch-btn torch-btn-start'; btn.disabled = false; }
+  if(flame) { flame.textContent = '🔥'; flame.classList.remove('dim'); }
+  if(orb)   { orb.classList.remove('dim'); orb.style.animationDuration = ''; }
+  if(banner) banner.style.display = 'none';
+  updateTorchDisplay();
+}
+
+function torchOut(){
+  const isSpell = torchName === 'Spell: Light';
+  const flame   = document.getElementById('torch-flame');
+  const orb     = document.getElementById('spell-orb');
+  const banner  = document.getElementById('torch-out-banner');
+  const btn     = document.getElementById('torch-start-btn');
+  if(isSpell){
+    if(orb) orb.classList.add('dim');
+    banner.textContent = '✨ The spell has faded — darkness falls!';
+  } else {
+    if(flame){ flame.textContent = '🪨'; flame.classList.add('dim'); }
+    banner.textContent = '🔥 The torch has gone out — darkness falls!';
+  }
+  if(banner) banner.style.display = 'block';
+  if(btn){ btn.textContent = '▶ Start'; btn.className = 'torch-btn torch-btn-start'; btn.disabled = true; }
+  toast((isSpell ? '✨ Spell: Light has faded!' : '🔥 The torch has gone out!') + ' Darkness falls!', true);
+}
+
+function updateTorchDisplay(){
+  const m   = Math.floor(torchRemaining / 60);
+  const s   = torchRemaining % 60;
+  const pct = torchTotal > 0 ? (torchRemaining / torchTotal) * 100 : 0;
+  const isSpell = torchName === 'Spell: Light';
+
+  const timeEl   = document.getElementById('torch-time');
+  const fillEl   = document.getElementById('torch-fill');
+  const flameEl  = document.getElementById('torch-flame');
+  const orbWrap  = document.getElementById('spell-orb-wrap');
+  const orbEl    = document.getElementById('spell-orb');
+  const labelEl  = document.getElementById('torch-label');
+
+  if(!timeEl) return;
+  timeEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+
+  // Toggle flame vs orb
+  if(isSpell){
+    flameEl.style.display = 'none';
+    orbWrap.classList.add('visible');
+  } else {
+    flameEl.style.display = '';
+    orbWrap.classList.remove('visible');
+  }
+
+  // Color / state
+  if(torchRemaining <= 0){
+    timeEl.className = 'torch-time out';
+    fillEl.style.background = '#3a1a0a';
+    if(isSpell){ orbEl.classList.add('dim'); }
+    else { flameEl.classList.add('dim'); }
+  } else if(pct <= 10){
+    timeEl.className = 'torch-time critical';
+    fillEl.style.background = 'linear-gradient(90deg,#8b1a1a,#c0392b)';
+    if(isSpell){ orbEl.classList.remove('dim'); orbEl.style.animationDuration='0.8s,0.8s'; }
+    else { flameEl.textContent = '🕯'; flameEl.classList.remove('dim'); }
+  } else if(pct <= 25){
+    timeEl.className = 'torch-time low';
+    fillEl.style.background = 'linear-gradient(90deg,#6a3010,#d4822a)';
+    if(isSpell){ orbEl.classList.remove('dim'); orbEl.style.animationDuration='1.2s,2s'; }
+    else { flameEl.textContent = '🕯'; flameEl.classList.remove('dim'); }
+  } else {
+    timeEl.className = 'torch-time plenty';
+    fillEl.style.background = 'linear-gradient(90deg,var(--blood),var(--gold))';
+    if(isSpell){ orbEl.classList.remove('dim'); orbEl.style.animationDuration='2s,3s'; }
+    else { flameEl.textContent = '🔥'; flameEl.classList.remove('dim'); }
+  }
+
+  fillEl.style.width = pct + '%';
+  if(!torchRunning && torchRemaining > 0){
+    labelEl.textContent = torchName + (torchRemaining === torchTotal ? ' — Ready' : ' — Paused');
+  } else if(torchRunning){
+    labelEl.textContent = torchName + ' — ' + (isSpell ? 'Glowing' : 'Burning');
+  }
+}
+
 // ── Initiative column toggles ──
 let showInitCol = localStorage.getItem('Chronicles_show_init') !== 'false';
 let showACCol   = localStorage.getItem('Chronicles_show_ac')   !== 'false';
