@@ -18,7 +18,120 @@
   --blood:#8b1a1a;--blood-light:#c0392b;--ember:#d4572a;
   --shadow:rgba(0,0,0,0.7);--panel:rgba(20,13,5,0.92);--panel-light:rgba(35,22,8,0.85);
   --border-gold:1px solid #c8a84b55;--radius:4px;
+  --bg:#0d0a06;--bg-glow1:#2d1a08;--bg-glow2:#1a0d05;
+  --text-primary:#f5edd8;--border-base:#3a2910;--border-base2:#2a1a08;
+  --input-bg:rgba(10,6,2,.8);
 }
+/* ── Light Mode ── */
+body.light-mode {
+  --ink:#f5edd8;--parchment:#2a1a0a;--parchment-dark:#3a2510;
+  --leather:#e8d5a8;--gold:#8a6010;--gold-light:#6a4808;--gold-dim:#9a7828;
+  --blood:#8b1a1a;--blood-light:#c0392b;--ember:#d4572a;
+  --shadow:rgba(0,0,0,0.15);--panel:rgba(245,235,210,0.95);--panel-light:rgba(235,220,190,0.9);
+  --border-gold:1px solid #c8a84b88;--radius:4px;
+  --bg:#f0e6cc;--bg-glow1:#e8d5a8;--bg-glow2:#ddc890;
+  --text-primary:#2a1a0a;--border-base:#c8a84b;--border-base2:#d4b86a;
+  --input-bg:rgba(255,248,230,.9);
+}
+body.light-mode {
+  background-color:#f0e6cc;
+  background-image:
+    radial-gradient(ellipse at 20% 10%,#e8d5a8 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 90%,#ddc890 0%,transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  color:#2a1a0a;
+}
+body.light-mode h1{ color:#6a4808; text-shadow:0 0 20px rgba(138,96,16,.3),0 2px 4px rgba(0,0,0,.15); }
+body.light-mode .subtitle{ color:#9a7828; }
+body.light-mode header::before,body.light-mode header::after{ background:linear-gradient(90deg,transparent,#c8a84b,transparent); }
+body.light-mode .nav-btn{ border-color:#c8a84b; color:#7a5010; }
+body.light-mode .nav-btn:hover{ background:rgba(200,168,75,.15); color:#5a3808; }
+body.light-mode .nav-btn.active{ background:#8a6010; color:#f5edd8; border-color:#8a6010; }
+body.light-mode .card{ background:rgba(245,235,210,.95); border:1px solid #c8a84b55; box-shadow:0 4px 24px rgba(0,0,0,.1),inset 0 1px 0 rgba(200,168,75,.2); }
+body.light-mode .card::before{ background:linear-gradient(90deg,transparent,#c8a84b88,transparent); }
+body.light-mode .section-title{ color:#9a7828; }
+body.light-mode label{ color:#7a5010; }
+body.light-mode input[type=text],body.light-mode input[type=number],body.light-mode textarea,body.light-mode select{ background:rgba(255,248,230,.9);border:1px solid #c8a84b88;border-bottom-color:#8a6010;color:#2a1a0a; }
+body.light-mode input:focus,body.light-mode textarea:focus,body.light-mode select:focus{ border-color:#6a4808;box-shadow:0 0 0 2px rgba(138,96,16,.15); }
+body.light-mode select option{ background:#f0e6cc;color:#2a1a0a; }
+body.light-mode .btn-ghost{ color:#7a5010;border-color:#c8a84b88; }
+body.light-mode .btn-ghost:hover{ border-color:#8a6010;color:#5a3808; }
+body.light-mode .char-card{ background:rgba(245,235,210,.95);border-color:#c8a84b88; }
+body.light-mode .char-card:hover{ border-color:#8a6010; }
+body.light-mode .char-card.expanded{ border-color:#6a4808; }
+body.light-mode .char-header{ background:linear-gradient(135deg,rgba(220,195,140,.8),rgba(240,228,195,.9)); border-bottom-color:#c8a84b88; }
+body.light-mode .char-name{ color:#5a3808; }
+body.light-mode .char-meta{ color:#9a7828; }
+body.light-mode .char-badge{ border-color:#9a7828;color:#7a5010; }
+body.light-mode .char-body{ color:#2a1a0a; }
+body.light-mode .stat-box{ background:rgba(200,168,75,.12);border-color:#c8a84b88; }
+body.light-mode .stat-label{ color:#9a7828; }
+body.light-mode .stat-val{ color:#2a1a0a; }
+body.light-mode .stat-mod{ color:#7a5010; }
+body.light-mode .hp-bar{ background:rgba(0,0,0,.1);border-color:#c8a84b88; }
+body.light-mode .char-notes{ color:#5a3808;border-top-color:#c8a84b55; }
+body.light-mode .journal-entry{ background:rgba(245,235,210,.95);border-color:#c8a84b55;border-left-color:#9a7828; }
+body.light-mode .journal-entry:hover{ border-left-color:#6a4808; }
+body.light-mode .entry-title{ color:#5a3808; }
+body.light-mode .entry-meta{ color:#9a7828; }
+body.light-mode .entry-body{ color:#3a2010; }
+body.light-mode .entry-body h1,.entry-body h2,.entry-body h3{ color:#5a3808; }
+body.light-mode .entry-body blockquote{ background:rgba(200,168,75,.1);border-left-color:#9a7828; }
+body.light-mode .init-row{ background:rgba(245,235,210,.95);border-color:#c8a84b88; }
+body.light-mode .init-row.active-turn{ border-color:#6a4808;background:rgba(240,224,180,.98);box-shadow:0 0 12px rgba(138,96,16,.2); }
+body.light-mode .init-row.active-turn::before{ color:#6a4808; }
+body.light-mode .init-name{ color:#2a1a0a; }
+body.light-mode .init-stat-label{ color:#9a7828; }
+body.light-mode .init-stat-val{ color:#2a1a0a; }
+body.light-mode .init-num span{ color:#5a3808; }
+body.light-mode .init-hp-bar{ background:rgba(0,0,0,.1); }
+body.light-mode .round-badge{ color:#5a3808;border-color:#9a7828;background:rgba(200,168,75,.15); }
+body.light-mode .torch-bar{ background:rgba(245,235,210,.95);border-color:#c8a84b88; }
+body.light-mode .torch-title{ color:#9a7828; }
+body.light-mode .torch-time.plenty{ color:#5a3808;text-shadow:0 0 20px rgba(138,96,16,.3); }
+body.light-mode .torch-track{ background:rgba(0,0,0,.1);border-color:#c8a84b88; }
+body.light-mode .torch-label{ color:#9a7828; }
+body.light-mode .roll-history{ scrollbar-color:#c8a84b transparent; }
+body.light-mode .history-item{ border-bottom-color:#c8a84b55; }
+body.light-mode .history-die{ color:#9a7828; }
+body.light-mode .history-roll{ color:#2a1a0a; }
+body.light-mode .result-display{ background:rgba(240,228,195,.7);border-color:#c8a84b88; }
+body.light-mode .result-number{ color:#5a3808;text-shadow:0 0 30px rgba(138,96,16,.4); }
+body.light-mode .empty-state{ color:#9a7828; }
+body.light-mode .backup-card{ background:rgba(245,235,210,.95);border-color:#c8a84b55; }
+body.light-mode .backup-title{ color:#5a3808; }
+body.light-mode .backup-desc{ color:#6a4a18; }
+body.light-mode .toast{ background:rgba(245,235,210,.97);border-color:#9a7828;color:#5a3808; }
+body.light-mode .md-preview-wrap{ background:rgba(240,228,195,.5);border-color:#c8a84b88;color:#3a2010; }
+body.light-mode .init-col-toggle{ border-color:#c8a84b88;color:#9a7828; }
+body.light-mode .init-col-toggle.active{ background:rgba(138,96,16,.1);border-color:#8a6010;color:#5a3808; }
+body.light-mode .mod-toggle-btn{ border-color:#c8a84b88;color:#9a7828; }
+body.light-mode .mod-toggle-btn.active{ background:rgba(138,96,16,.1);border-color:#8a6010;color:#5a3808; }
+body.light-mode .player-roll-panel{ background:rgba(245,235,210,.95); }
+body.light-mode .die-btn{ background:rgba(245,235,210,.95);border-color:#c8a84b88;color:#2a1a0a; }
+body.light-mode .die-btn:hover{ border-color:#8a6010;background:rgba(200,168,75,.15); }
+body.light-mode .die-btn .die-label{ color:#7a5010 !important; }
+body.light-mode .die-btn.rolling{ border-color:#6a4808; }
+
+/* ── Theme Toggle Button ── */
+.theme-toggle{
+  position:fixed;
+  top:1rem;right:1rem;
+  width:42px;height:42px;
+  border-radius:50%;
+  background:rgba(20,13,5,.8);
+  border:1px solid var(--gold-dim);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;
+  transition:all .3s ease;
+  z-index:9998;
+  box-shadow:0 2px 12px rgba(0,0,0,.4);
+  backdrop-filter:blur(4px);
+}
+.theme-toggle:hover{ border-color:var(--gold);transform:scale(1.1);box-shadow:0 4px 16px rgba(200,168,75,.3); }
+body.light-mode .theme-toggle{ background:rgba(245,235,210,.9);border-color:#9a7828;box-shadow:0 2px 12px rgba(0,0,0,.15); }
+body.light-mode .theme-toggle:hover{ box-shadow:0 4px 16px rgba(138,96,16,.3); }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background-color:#0d0a06;background-image:radial-gradient(ellipse at 20% 10%,#2d1a08 0%,transparent 50%),radial-gradient(ellipse at 80% 90%,#1a0d05 0%,transparent 50%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");min-height:100vh;font-family:'Crimson Pro',Georgia,serif;color:var(--parchment);overflow-x:hidden;}
 header{text-align:center;padding:2.5rem 1rem 1rem;position:relative;}
@@ -485,8 +598,9 @@ select option{background:#1a0d05;}
 </style>
 </head>
 <body>
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
 <header>
-  <div class="logo-quill">
+  <div class="logo-rune">
     <img src="assets/images/quill.png"
          alt="The Chronicles"
          style="width:130px;height:130px;object-fit:contain;display:block;margin:0 auto;border-radius:6px;"/>
@@ -868,7 +982,7 @@ select option{background:#1a0d05;}
     <div class="backup-card" style="grid-column:1/-1">
       <span class="backup-icon">🔵</span>
       <div class="backup-title">Google Drive Backup</div>
-      <div class="backup-desc">Upload your Chronicles' backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
+      <div class="backup-desc">Upload your Chronicles backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
       <div id="drive-status-wrap"></div>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem">
         <button class="btn btn-drive" id="drive-backup-btn" onclick="driveBackup()" disabled>🔵 Backup to Drive</button>
@@ -898,7 +1012,7 @@ select option{background:#1a0d05;}
 // ── State ──
 let characters=[], journal=[], rollHistory=[], journalFilter='all';
 let driveAccessToken=null;
-let driveClientId=localStorage.getItem('chronicles_client_id')||'';
+let driveClientId=localStorage.getItem('Chronicless_client_id')||'';
 
 // ── Nav ──
 document.querySelectorAll('.nav-btn').forEach(btn=>{
@@ -1250,7 +1364,7 @@ function downloadJSON(){
   const blob=new Blob([JSON.stringify(getBackupData(),null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download=`chronicles-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.href=url; a.download=`Chronicless-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click(); URL.revokeObjectURL(url);
   toast('✦ Backup downloaded');
 }
@@ -1386,7 +1500,7 @@ async function exportPDF(){
   }
   bar.style.width='95%';
   await new Promise(r=>setTimeout(r,100));
-  doc.save(`chronicles-${new Date().toISOString().slice(0,10)}.pdf`);
+  doc.save(`Chronicless-${new Date().toISOString().slice(0,10)}.pdf`);
   bar.style.width='100%';
   setTimeout(()=>{progress.style.display='none';bar.style.width='0';},900);
   toast('✦ PDF exported');
@@ -1398,7 +1512,7 @@ let driveTokenExpiry = 0;      // ms timestamp when current token expires
 
 function saveClientId(){
   driveClientId=document.getElementById('drive-client-id').value.trim();
-  localStorage.setItem('chronicles_client_id',driveClientId);
+  localStorage.setItem('Chronicless_client_id',driveClientId);
 }
 function setDriveStatus(type,msg){
   const map={ok:'status-ok',warn:'status-warn',err:'status-err'};
@@ -1408,7 +1522,7 @@ function setDriveStatus(type,msg){
 function initDrive(){
   const id=document.getElementById('drive-client-id').value.trim()||driveClientId;
   if(!id){toast('⚠ Paste your Client ID first',true);return;}
-  driveClientId=id; localStorage.setItem('chronicle_client_id',id);
+  driveClientId=id; localStorage.setItem('Chronicless_client_id',id);
   if(!window.google||!window.google.accounts){
     setDriveStatus('err','✗ Google library not loaded — check your internet connection');
     return;
@@ -1485,7 +1599,7 @@ async function driveBackup(){
   try{
     // Always get a fresh token — silently refreshes if expired
     const token = await getFreshToken();
-    const filename=`chronicle-backup-${new Date().toISOString().slice(0,10)}.json`;
+    const filename=`Chronicless-backup-${new Date().toISOString().slice(0,10)}.json`;
     const content=JSON.stringify(getBackupData(),null,2);
     const boundary='--------ChroniclesBackupBoundary314159';
     const body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:filename,mimeType:'application/json'})}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
@@ -1506,11 +1620,11 @@ async function driveBackup(){
 }
 
 // ── Modifier toggle ──
-let showMods = localStorage.getItem('chronicle_show_mods') !== 'false';
+let showMods = localStorage.getItem('Chronicless_show_mods') !== 'false';
 
 function toggleMods(){
   showMods = !showMods;
-  localStorage.setItem('chronicle_show_mods', showMods);
+  localStorage.setItem('Chronicless_show_mods', showMods);
   applyModToggle();
   renderChars(); // re-render cards to reflect change
 }
@@ -1532,6 +1646,26 @@ function applyModToggle(){
 }
 
 // ── Initiative Tracker ──
+// ── Theme Toggle ──
+let isLightMode = localStorage.getItem('Chronicless_theme') === 'light';
+
+function applyTheme(){
+  const btn = document.getElementById('theme-toggle');
+  if(isLightMode){
+    document.body.classList.add('light-mode');
+    if(btn) btn.textContent = '☀️';
+  } else {
+    document.body.classList.remove('light-mode');
+    if(btn) btn.textContent = '🌙';
+  }
+}
+
+function toggleTheme(){
+  isLightMode = !isLightMode;
+  localStorage.setItem('Chronicless_theme', isLightMode ? 'light' : 'dark');
+  applyTheme();
+}
+
 // ── Torch Timer ──
 let torchPanelOpen = true;
 
@@ -1691,10 +1825,10 @@ function updateTorchDisplay(){
 }
 
 // ── Initiative column toggles ──
-let showInitCol = localStorage.getItem('chronicle_show_init') !== 'false';
-let showACCol   = localStorage.getItem('chronicle_show_ac')   !== 'false';
-let showDefCol  = localStorage.getItem('chronicle_show_def')  !== 'false';
-let showArmorCol= localStorage.getItem('chronicle_show_armor')!== 'false';
+let showInitCol = localStorage.getItem('Chronicless_show_init') !== 'false';
+let showACCol   = localStorage.getItem('Chronicless_show_ac')   !== 'false';
+let showDefCol  = localStorage.getItem('Chronicless_show_def')  !== 'false';
+let showArmorCol= localStorage.getItem('Chronicless_show_armor')!== 'false';
 let defModeActive = false;
 
 function applyInitToggles(){
@@ -1713,10 +1847,10 @@ function applyInitToggles(){
   if(bd) bd.classList.toggle('active', showDefCol);
   if(bm) bm.classList.toggle('active', showArmorCol);
 }
-function toggleInitCol(){  showInitCol  = !showInitCol;  localStorage.setItem('chronicle_show_init',  showInitCol);  applyInitToggles(); }
-function toggleACCol(){    showACCol    = !showACCol;    localStorage.setItem('chronicle_show_ac',    showACCol);    applyInitToggles(); }
-function toggleDefCol(){   showDefCol   = !showDefCol;   localStorage.setItem('chronicle_show_def',   showDefCol);   applyInitToggles(); }
-function toggleArmorCol(){ showArmorCol = !showArmorCol; localStorage.setItem('chronicle_show_armor', showArmorCol); applyInitToggles(); }
+function toggleInitCol(){  showInitCol  = !showInitCol;  localStorage.setItem('Chronicless_show_init',  showInitCol);  applyInitToggles(); }
+function toggleACCol(){    showACCol    = !showACCol;    localStorage.setItem('Chronicless_show_ac',    showACCol);    applyInitToggles(); }
+function toggleDefCol(){   showDefCol   = !showDefCol;   localStorage.setItem('Chronicless_show_def',   showDefCol);   applyInitToggles(); }
+function toggleArmorCol(){ showArmorCol = !showArmorCol; localStorage.setItem('Chronicless_show_armor', showArmorCol); applyInitToggles(); }
 function toggleDefMode(){
   defModeActive = !defModeActive;
   const btn = document.getElementById('toggle-def-mode');
@@ -2121,6 +2255,7 @@ if(driveClientId) document.getElementById('drive-client-id').value=driveClientId
 setDriveStatus('warn','○ Not connected — paste your Client ID and click Connect');
 applyModToggle();
 applyInitToggles();
+applyTheme();
 </script>
 </body>
 </html>
