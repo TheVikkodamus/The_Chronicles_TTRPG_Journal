@@ -486,7 +486,7 @@ select option{background:#1a0d05;}
 </head>
 <body>
 <header>
-  <div class="logo-rune">
+  <div class="logo-quill">
     <img src="assets/images/quill.png"
          alt="The Chronicles"
          style="width:130px;height:130px;object-fit:contain;display:block;margin:0 auto;border-radius:6px;"/>
@@ -693,31 +693,36 @@ select option{background:#1a0d05;}
       <div class="torch-bar">
         <div class="torch-header">
           <span class="torch-title">🕯 Light Source Timer</span>
-          <div class="torch-preset-row">
-            <button class="torch-preset active-preset" onclick="setTorchPreset(60,'Torch',this)">Torch 1h</button>
-            <button class="torch-preset" onclick="setTorchPreset(60,'Spell: Light',this)">Spell: Light 1h</button>
-            <button class="torch-preset" onclick="setTorchPreset(10,'Candle',this)">Candle 10m</button>
+          <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+            <div class="torch-preset-row">
+              <button class="torch-preset active-preset" onclick="setTorchPreset(60,'Torch',this)">Torch 1h</button>
+              <button class="torch-preset" onclick="setTorchPreset(60,'Spell: Light',this)">Spell: Light 1h</button>
+              <button class="torch-preset" onclick="setTorchPreset(10,'Candle',this)">Candle 10m</button>
+            </div>
+            <button class="torch-btn torch-btn-reset" id="torch-collapse-btn" onclick="toggleTorchPanel()" style="font-size:.55rem;padding:.2rem .6rem;min-height:28px;">▲ Hide</button>
           </div>
         </div>
-        <div class="torch-display">
-          <div class="torch-flame" id="torch-flame">🔥</div>
-          <div class="spell-orb-wrap" id="spell-orb-wrap"><div class="spell-orb" id="spell-orb"></div></div>
-          <div class="torch-time plenty" id="torch-time">60:00</div>
-          <div class="torch-track-wrap">
-            <div class="torch-track"><div class="torch-fill" id="torch-fill" style="width:100%"></div></div>
-            <div class="torch-label" id="torch-label">Torch — Ready</div>
+        <div id="torch-body">
+          <div class="torch-display">
+            <div class="torch-flame" id="torch-flame">🔥</div>
+            <div class="spell-orb-wrap" id="spell-orb-wrap"><div class="spell-orb" id="spell-orb"></div></div>
+            <div class="torch-time plenty" id="torch-time">60:00</div>
+            <div class="torch-track-wrap">
+              <div class="torch-track"><div class="torch-fill" id="torch-fill" style="width:100%"></div></div>
+              <div class="torch-label" id="torch-label">Torch — Ready</div>
+            </div>
           </div>
-        </div>
-        <div class="torch-controls">
-          <button class="torch-btn torch-btn-start" id="torch-start-btn" onclick="torchStartPause()">▶ Start</button>
-          <button class="torch-btn torch-btn-reset" onclick="torchReset()">↺ Reset</button>
-          <div class="torch-custom-row">
-            <label>Custom</label>
-            <input type="number" id="torch-custom-min" min="1" max="480" placeholder="min" value="60"/>
-            <button class="torch-btn torch-btn-reset" onclick="setTorchCustom()">Set</button>
+          <div class="torch-controls">
+            <button class="torch-btn torch-btn-start" id="torch-start-btn" onclick="torchStartPause()">▶ Start</button>
+            <button class="torch-btn torch-btn-reset" onclick="torchReset()">↺ Reset</button>
+            <div class="torch-custom-row">
+              <label>Custom</label>
+              <input type="number" id="torch-custom-min" min="1" max="480" placeholder="min" value="60"/>
+              <button class="torch-btn torch-btn-reset" onclick="setTorchCustom()">Set</button>
+            </div>
           </div>
+          <div class="torch-out-banner" id="torch-out-banner">🔥 The torch has gone out — darkness falls!</div>
         </div>
-        <div class="torch-out-banner" id="torch-out-banner">🔥 The torch has gone out — darkness falls!</div>
       </div>
 
       <div class="init-list" id="init-list">
@@ -863,7 +868,7 @@ select option{background:#1a0d05;}
     <div class="backup-card" style="grid-column:1/-1">
       <span class="backup-icon">🔵</span>
       <div class="backup-title">Google Drive Backup</div>
-      <div class="backup-desc">Upload your Chronicles backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
+      <div class="backup-desc">Upload your Chronicles' backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
       <div id="drive-status-wrap"></div>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem">
         <button class="btn btn-drive" id="drive-backup-btn" onclick="driveBackup()" disabled>🔵 Backup to Drive</button>
@@ -893,7 +898,7 @@ select option{background:#1a0d05;}
 // ── State ──
 let characters=[], journal=[], rollHistory=[], journalFilter='all';
 let driveAccessToken=null;
-let driveClientId=localStorage.getItem('Chronicles_client_id')||'';
+let driveClientId=localStorage.getItem('chronicles_client_id')||'';
 
 // ── Nav ──
 document.querySelectorAll('.nav-btn').forEach(btn=>{
@@ -1245,7 +1250,7 @@ function downloadJSON(){
   const blob=new Blob([JSON.stringify(getBackupData(),null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download=`Chronicles-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.href=url; a.download=`chronicles-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click(); URL.revokeObjectURL(url);
   toast('✦ Backup downloaded');
 }
@@ -1381,7 +1386,7 @@ async function exportPDF(){
   }
   bar.style.width='95%';
   await new Promise(r=>setTimeout(r,100));
-  doc.save(`Chronicles-${new Date().toISOString().slice(0,10)}.pdf`);
+  doc.save(`chronicles-${new Date().toISOString().slice(0,10)}.pdf`);
   bar.style.width='100%';
   setTimeout(()=>{progress.style.display='none';bar.style.width='0';},900);
   toast('✦ PDF exported');
@@ -1393,7 +1398,7 @@ let driveTokenExpiry = 0;      // ms timestamp when current token expires
 
 function saveClientId(){
   driveClientId=document.getElementById('drive-client-id').value.trim();
-  localStorage.setItem('Chronicles_client_id',driveClientId);
+  localStorage.setItem('chronicles_client_id',driveClientId);
 }
 function setDriveStatus(type,msg){
   const map={ok:'status-ok',warn:'status-warn',err:'status-err'};
@@ -1403,7 +1408,7 @@ function setDriveStatus(type,msg){
 function initDrive(){
   const id=document.getElementById('drive-client-id').value.trim()||driveClientId;
   if(!id){toast('⚠ Paste your Client ID first',true);return;}
-  driveClientId=id; localStorage.setItem('Chronicles_client_id',id);
+  driveClientId=id; localStorage.setItem('chronicle_client_id',id);
   if(!window.google||!window.google.accounts){
     setDriveStatus('err','✗ Google library not loaded — check your internet connection');
     return;
@@ -1480,7 +1485,7 @@ async function driveBackup(){
   try{
     // Always get a fresh token — silently refreshes if expired
     const token = await getFreshToken();
-    const filename=`Chronicles-backup-${new Date().toISOString().slice(0,10)}.json`;
+    const filename=`chronicle-backup-${new Date().toISOString().slice(0,10)}.json`;
     const content=JSON.stringify(getBackupData(),null,2);
     const boundary='--------ChroniclesBackupBoundary314159';
     const body=`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:filename,mimeType:'application/json'})}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
@@ -1501,11 +1506,11 @@ async function driveBackup(){
 }
 
 // ── Modifier toggle ──
-let showMods = localStorage.getItem('Chronicles_show_mods') !== 'false';
+let showMods = localStorage.getItem('chronicle_show_mods') !== 'false';
 
 function toggleMods(){
   showMods = !showMods;
-  localStorage.setItem('Chronicles_show_mods', showMods);
+  localStorage.setItem('chronicle_show_mods', showMods);
   applyModToggle();
   renderChars(); // re-render cards to reflect change
 }
@@ -1528,6 +1533,20 @@ function applyModToggle(){
 
 // ── Initiative Tracker ──
 // ── Torch Timer ──
+let torchPanelOpen = true;
+
+function toggleTorchPanel(){
+  torchPanelOpen = !torchPanelOpen;
+  const body = document.getElementById('torch-body');
+  const btn  = document.getElementById('torch-collapse-btn');
+  if(torchPanelOpen){
+    body.style.display = 'block';
+    btn.textContent = '▲ Hide';
+  } else {
+    body.style.display = 'none';
+    btn.textContent = '▼ Timer';
+  }
+}
 let torchTotal    = 60 * 60; // seconds
 let torchRemaining= 60 * 60;
 let torchInterval = null;
@@ -1672,10 +1691,10 @@ function updateTorchDisplay(){
 }
 
 // ── Initiative column toggles ──
-let showInitCol = localStorage.getItem('Chronicles_show_init') !== 'false';
-let showACCol   = localStorage.getItem('Chronicles_show_ac')   !== 'false';
-let showDefCol  = localStorage.getItem('Chronicles_show_def')  !== 'false';
-let showArmorCol= localStorage.getItem('Chronicles_show_armor')!== 'false';
+let showInitCol = localStorage.getItem('chronicle_show_init') !== 'false';
+let showACCol   = localStorage.getItem('chronicle_show_ac')   !== 'false';
+let showDefCol  = localStorage.getItem('chronicle_show_def')  !== 'false';
+let showArmorCol= localStorage.getItem('chronicle_show_armor')!== 'false';
 let defModeActive = false;
 
 function applyInitToggles(){
@@ -1694,10 +1713,10 @@ function applyInitToggles(){
   if(bd) bd.classList.toggle('active', showDefCol);
   if(bm) bm.classList.toggle('active', showArmorCol);
 }
-function toggleInitCol(){  showInitCol  = !showInitCol;  localStorage.setItem('Chronicles_show_init',  showInitCol);  applyInitToggles(); }
-function toggleACCol(){    showACCol    = !showACCol;    localStorage.setItem('Chronicles_show_ac',    showACCol);    applyInitToggles(); }
-function toggleDefCol(){   showDefCol   = !showDefCol;   localStorage.setItem('Chronicles_show_def',   showDefCol);   applyInitToggles(); }
-function toggleArmorCol(){ showArmorCol = !showArmorCol; localStorage.setItem('Chronicles_show_armor', showArmorCol); applyInitToggles(); }
+function toggleInitCol(){  showInitCol  = !showInitCol;  localStorage.setItem('chronicle_show_init',  showInitCol);  applyInitToggles(); }
+function toggleACCol(){    showACCol    = !showACCol;    localStorage.setItem('chronicle_show_ac',    showACCol);    applyInitToggles(); }
+function toggleDefCol(){   showDefCol   = !showDefCol;   localStorage.setItem('chronicle_show_def',   showDefCol);   applyInitToggles(); }
+function toggleArmorCol(){ showArmorCol = !showArmorCol; localStorage.setItem('chronicle_show_armor', showArmorCol); applyInitToggles(); }
 function toggleDefMode(){
   defModeActive = !defModeActive;
   const btn = document.getElementById('toggle-def-mode');
