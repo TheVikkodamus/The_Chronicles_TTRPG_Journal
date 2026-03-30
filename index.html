@@ -201,21 +201,34 @@ select option{background:#1a0d05;}
 @media(max-width:720px){.init-layout{grid-template-columns:1fr;}}
 .init-list{display:flex;flex-direction:column;gap:.5rem;}
 .init-row{
-  display:grid;grid-template-columns:44px 1fr 54px 54px auto;
   align-items:center;gap:.6rem;
   padding:.7rem 1rem;
   background:var(--panel);border:1px solid #3a2910;border-radius:var(--radius);
   transition:border-color .2s,opacity .2s;
   position:relative;
+  display:grid;
 }
 .init-row.active-turn{border-color:var(--gold);box-shadow:0 0 12px rgba(200,168,75,.2);background:rgba(35,22,5,.97);}
 .init-row.active-turn::before{content:'▶';position:absolute;left:-18px;color:var(--gold);font-size:.8rem;}
 .init-row.defeated{opacity:.38;filter:grayscale(.6);}
 .hide-init-col .init-num{display:none;}
 .hide-ac-col .init-ac-cell{display:none;}
-.hide-init-col.hide-ac-col .init-row{grid-template-columns:1fr auto auto;}
-.hide-init-col .init-row{grid-template-columns:1fr 54px auto;}
-.hide-ac-col .init-row{grid-template-columns:44px 1fr 54px auto;}
+.hide-def-col .init-def-cell{display:none;}
+.hide-def-col .init-def-field{display:none;}
+.hide-armor-col .init-armor-field{display:none;}
+.init-row{grid-template-columns:44px 1fr 54px 54px 54px auto;}
+.hide-init-col .init-row{grid-template-columns:1fr 54px 54px 54px auto;}
+.hide-ac-col .init-row{grid-template-columns:44px 1fr 54px 54px auto;}
+.hide-def-col .init-row{grid-template-columns:44px 1fr 54px 54px auto;}
+.hide-init-col.hide-ac-col .init-row{grid-template-columns:1fr 54px 54px auto;}
+.hide-init-col.hide-def-col .init-row{grid-template-columns:1fr 54px 54px auto;}
+.hide-ac-col.hide-def-col .init-row{grid-template-columns:44px 1fr 54px auto;}
+.hide-init-col.hide-ac-col.hide-def-col .init-row{grid-template-columns:1fr 54px auto;}
+.defense-active .btn-dmg{background:rgba(50,30,70,.7);color:#bb88ff;border:1px solid #6a3a8a;}
+.defense-active .btn-dmg:hover{background:rgba(80,40,110,.9);}
+.defense-badge{display:inline-block;font-family:'Cinzel',serif;font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.1rem .4rem;border:1px solid #6a3a8a;color:#bb88ff;border-radius:2px;margin-left:.3rem;}
+.armor-die-badge{display:inline-block;font-family:'Cinzel',serif;font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.1rem .4rem;border:1px solid #8a5a1a;color:#e8a84b;border-radius:2px;margin-left:.3rem;}
+.armor-roll-toast{color:#e8a84b;}
 .hide-init-col .init-field{display:none;}
 .hide-ac-col .init-ac-field{display:none;}
 .init-field-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;}
@@ -346,15 +359,30 @@ select option{background:#1a0d05;}
         <div class="init-field-row" id="i-field-row">
           <div class="init-field"><label>Init Modifier</label><input type="number" id="i-init" placeholder="+0" min="-10" max="20"/></div>
           <div class="init-ac-field"><label>AC</label><input type="number" id="i-ac" placeholder="13" min="0" max="30"/></div>
+          <div class="init-def-field"><label>Defense</label><input type="number" id="i-def" placeholder="0" min="0" max="20"/></div>
           <div><label>HP</label><input type="number" id="i-hp" placeholder="20" min="0"/></div>
         </div>
-        <div>
-          <label>Type</label>
-          <select id="i-type">
-            <option value="player">Player</option>
-            <option value="monster" selected>Monster</option>
-            <option value="npc">NPC</option>
-          </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <div class="init-armor-field">
+            <label>Armor Tier</label>
+            <select id="i-armordie">
+              <option value="0|0">None</option>
+              <option value="2|0">Light (Tier 1) — d2</option>
+              <option value="4|0">Medium (Tier 2) — d4</option>
+              <option value="6|0">Heavy (Tier 3) — d6</option>
+              <option value="8|0">d8</option>
+              <option value="10|0">d10</option>
+              <option value="12|0">d12</option>
+            </select>
+          </div>
+          <div>
+            <label>Type</label>
+            <select id="i-type">
+              <option value="player">Player</option>
+              <option value="monster" selected>Monster</option>
+              <option value="npc">NPC</option>
+            </select>
+          </div>
         </div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.3rem">
           <button class="btn btn-primary" onclick="addCombatant()">✦ Add</button>
@@ -430,6 +458,9 @@ select option{background:#1a0d05;}
         <div style="margin-left:auto;display:flex;gap:.3rem;flex-wrap:wrap;">
           <button class="init-col-toggle active" id="toggle-init-col" onclick="toggleInitCol()" title="Show/hide Initiative Modifier column">◈ Init Mod</button>
           <button class="init-col-toggle active" id="toggle-ac-col" onclick="toggleACCol()" title="Show/hide AC column">◈ AC</button>
+          <button class="init-col-toggle active" id="toggle-def-col" onclick="toggleDefCol()" title="Show/hide Defense column">◈ Defense</button>
+          <button class="init-col-toggle active" id="toggle-armor-col" onclick="toggleArmorCol()" title="Show/hide Armor Tier">◈ Armor Tier</button>
+          <button class="init-col-toggle" id="toggle-def-mode" onclick="toggleDefMode()" title="When ON damage is reduced by each target's Defense rating">🛡 Defense Mode: Off</button>
         </div>
       </div>
       <div class="init-list" id="init-list">
@@ -1227,28 +1258,46 @@ function applyModToggle(){
 // ── Initiative column toggles ──
 let showInitCol = localStorage.getItem('chronicle_show_init') !== 'false';
 let showACCol   = localStorage.getItem('chronicle_show_ac')   !== 'false';
+let showDefCol  = localStorage.getItem('chronicle_show_def')  !== 'false';
+let showArmorCol= localStorage.getItem('chronicle_show_armor')!== 'false';
+let defModeActive = false;
 
 function applyInitToggles(){
   const tab = document.getElementById('tab-initiative');
   if(!tab) return;
-  if(showInitCol){ tab.classList.remove('hide-init-col'); }
-  else { tab.classList.add('hide-init-col'); }
-  if(showACCol){ tab.classList.remove('hide-ac-col'); }
-  else { tab.classList.add('hide-ac-col'); }
+  if(showInitCol){ tab.classList.remove('hide-init-col'); } else { tab.classList.add('hide-init-col'); }
+  if(showACCol){   tab.classList.remove('hide-ac-col');   } else { tab.classList.add('hide-ac-col');   }
+  if(showDefCol){  tab.classList.remove('hide-def-col');  } else { tab.classList.add('hide-def-col');  }
+  if(showArmorCol){tab.classList.remove('hide-armor-col');} else { tab.classList.add('hide-armor-col');}
   const bi = document.getElementById('toggle-init-col');
   const ba = document.getElementById('toggle-ac-col');
+  const bd = document.getElementById('toggle-def-col');
+  const bm = document.getElementById('toggle-armor-col');
   if(bi) bi.classList.toggle('active', showInitCol);
   if(ba) ba.classList.toggle('active', showACCol);
+  if(bd) bd.classList.toggle('active', showDefCol);
+  if(bm) bm.classList.toggle('active', showArmorCol);
 }
-function toggleInitCol(){
-  showInitCol = !showInitCol;
-  localStorage.setItem('chronicle_show_init', showInitCol);
-  applyInitToggles();
-}
-function toggleACCol(){
-  showACCol = !showACCol;
-  localStorage.setItem('chronicle_show_ac', showACCol);
-  applyInitToggles();
+function toggleInitCol(){  showInitCol  = !showInitCol;  localStorage.setItem('chronicle_show_init',  showInitCol);  applyInitToggles(); }
+function toggleACCol(){    showACCol    = !showACCol;    localStorage.setItem('chronicle_show_ac',    showACCol);    applyInitToggles(); }
+function toggleDefCol(){   showDefCol   = !showDefCol;   localStorage.setItem('chronicle_show_def',   showDefCol);   applyInitToggles(); }
+function toggleArmorCol(){ showArmorCol = !showArmorCol; localStorage.setItem('chronicle_show_armor', showArmorCol); applyInitToggles(); }
+function toggleDefMode(){
+  defModeActive = !defModeActive;
+  const btn = document.getElementById('toggle-def-mode');
+  const list = document.getElementById('init-list');
+  if(defModeActive){
+    btn.classList.add('active');
+    btn.textContent = '🛡 Defense Mode: On';
+    if(list) list.classList.add('defense-active');
+    toast('🛡 Defense Mode on — damage reduced by Defense rating');
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = '🛡 Defense Mode: Off';
+    if(list) list.classList.remove('defense-active');
+    toast('Defense Mode off');
+  }
+  renderInitiative();
 }
 
 let combatants = [];
@@ -1260,13 +1309,19 @@ function addCombatant(data){
   if(!name){toast('⚠ Name is required',true);return;}
   const initMod = (data && data.initMod !== undefined) ? data.initMod : (parseInt(document.getElementById('i-init').value)||0);
   const ac      = (data && data.ac  !== undefined) ? data.ac  : (parseInt(document.getElementById('i-ac').value)||0);
+  const def     = (data && data.def !== undefined) ? data.def : (parseInt(document.getElementById('i-def').value)||0);
+  const armorRaw = document.getElementById('i-armordie').value;
+  const armorParts = armorRaw.split('|');
+  const armorDie   = (data && data.armorDie !== undefined) ? data.armorDie : (parseInt(armorParts[0])||0);
+  const armorDR    = (data && data.armorDR  !== undefined) ? data.armorDR  : (parseInt(armorParts[1])||0);
   const hp      = (data && data.hp  !== undefined) ? data.hp  : (parseInt(document.getElementById('i-hp').value)||10);
   const type    = (data && data.type) ? data.type : document.getElementById('i-type').value;
-  combatants.push({id:Date.now()+Math.random(), name, initMod:initMod, initScore:0, ac, hp, maxhp:hp, type, defeated:false});
+  combatants.push({id:Date.now()+Math.random(), name, initMod:initMod, initScore:0, ac, def, armorDie, armorDR, hp, maxhp:hp, type, defeated:false});
   sortInitiative(false);
   renderInitiative();
   if(!data){
-    ['i-name','i-init','i-ac','i-hp'].forEach(id=>document.getElementById(id).value='');
+    ['i-name','i-init','i-ac','i-def','i-hp'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('i-armordie').value='0';
     toast(`✦ ${name} added to initiative`);
   }
 }
@@ -1276,7 +1331,7 @@ function importFromChars(){
   let added=0;
   characters.forEach(c=>{
     if(!combatants.find(x=>x.name===c.name)){
-      combatants.push({id:Date.now()+Math.random(),name:c.name,initMod:0,initScore:0,ac:0,hp:c.hp,maxhp:c.maxhp,type:'player',defeated:false});
+      combatants.push({id:Date.now()+Math.random(),name:c.name,initMod:0,initScore:0,ac:0,def:0,armorDie:0,armorDR:0,hp:c.hp,maxhp:c.maxhp,type:'player',defeated:false});
       added++;
     }
   });
@@ -1406,6 +1461,34 @@ function removeCombatant(id){
   renderInitiative();
 }
 
+function duplicateCombatant(id){
+  const src = combatants.find(c=>c.id===id);
+  if(!src) return;
+  // Count existing copies to auto-number the name
+  const baseName = src.name.replace(/ #\d+$/, '');
+  const copies = combatants.filter(c => c.name === baseName || c.name.match(new RegExp('^' + baseName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ' #\\d+$')));
+  const newName = baseName + ' #' + (copies.length + 1);
+  const clone = {
+    id: Date.now() + Math.random(),
+    name: newName,
+    initMod:   src.initMod,
+    initScore: src.initScore,
+    ac:        src.ac,
+    def:       src.def,
+    armorDie:  src.armorDie,
+    armorDR:   src.armorDR,
+    hp:        src.maxhp,
+    maxhp:     src.maxhp,
+    type:      src.type,
+    defeated:  false
+  };
+  // Insert clone right after the original
+  const idx = combatants.findIndex(c=>c.id===id);
+  combatants.splice(idx+1, 0, clone);
+  renderInitiative();
+  toast('⧉ ' + newName + ' added');
+}
+
 function toggleDefeated(id){
   const c=combatants.find(c=>c.id===id);
   if(c) c.defeated=!c.defeated;
@@ -1415,7 +1498,30 @@ function toggleDefeated(id){
 function adjustHP(id, delta){
   const c=combatants.find(c=>c.id===id); if(!c)return;
   const inp=document.getElementById(`i-dmg-${id}`);
-  const val=parseInt(inp ? inp.value : 0)||0;
+  let val=parseInt(inp ? inp.value : 0)||0;
+
+  if(delta === -1 && defModeActive){
+    if((c.armorDie||0) > 0){
+      const dieRoll   = Math.floor(Math.random()*c.armorDie)+1;
+      const total     = dieRoll;
+      const reduced   = Math.max(0, val - total);
+      const absorbed  = val - reduced;
+      val = reduced;
+      if(val === 0){
+        toast('🎲 ' + c.name + ': d' + c.armorDie + ' rolled ' + dieRoll + ' — fully blocked!');
+        renderInitiative(); return;
+      } else {
+        toast('🎲 ' + c.name + ': d' + c.armorDie + ' rolled ' + dieRoll + ' — ' + absorbed + ' absorbed, ' + val + ' dealt');
+      }
+    } else if((c.def||0) > 0){
+      const reduced  = Math.max(0, val - (c.def||0));
+      const absorbed = val - reduced;
+      val = reduced;
+      if(val === 0){ toast('🛡 ' + c.name + ': fully blocked by defense!'); renderInitiative(); return; }
+      if(absorbed > 0) toast('🛡 ' + c.name + ': ' + absorbed + ' absorbed (' + val + ' dealt)');
+    }
+  }
+
   c.hp=Math.max(0,Math.min(c.maxhp, c.hp + val*delta));
   if(c.hp===0) c.defeated=true;
   renderInitiative();
@@ -1471,12 +1577,17 @@ function renderInitiative(){
         <span style="font-size:.65rem;color:var(--gold-dim);font-family:'Cinzel',serif;letter-spacing:.05em">${c.initMod >= 0 ? '+' : ''}${c.initMod !== undefined ? c.initMod : '0'}</span>
       </div>
       <div>
-        <div class="init-name">${c.name}</div>
+        <div class="init-name">${c.name}${defModeActive && (c.armorDie||0)>0 ? `<span class="armor-die-badge">d${c.armorDie}</span>` : ''}${defModeActive && (c.armorDie||0)===0 && (c.def||0)>0 ? `<span class="defense-badge">DEF ${c.def}</span>` : ''}</div>
         <span class="init-type-badge type-${c.type}">${typeLabel}</span>
       </div>
       <div class="init-stat init-ac-cell">
         <span class="init-stat-label">AC</span>
         <span class="init-stat-val">${c.ac||'—'}</span>
+      </div>
+      <div class="init-stat init-def-cell">
+        <span class="init-stat-label">Defense</span>
+        <span class="init-stat-val" style="${(c.armorDie||0)>0?'color:#e8a84b':''}">${(c.armorDie||0)>0 ? 'd'+c.armorDie : (c.def||'0')}</span>
+        ${(c.armorDie||0)>0 ? '<span style="font-family:\'Cinzel\',serif;font-size:.45rem;color:#8a5a1a;display:block;letter-spacing:.05em">ARMOR DIE</span>' : ''}
       </div>
       <div class="init-stat">
         <span class="init-stat-label">HP</span>
@@ -1487,6 +1598,7 @@ function renderInitiative(){
         <input class="init-dmg-input" type="number" id="i-dmg-${c.id}" value="1" min="1" style="width:48px;text-align:center;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:.85rem;padding:.25rem .3rem;outline:none;border-radius:2px;"/>
         <button class="btn-heal" onclick="adjustHP(${c.id},1)">Heal</button>
         <button class="btn-dmg"  onclick="adjustHP(${c.id},-1)">Dmg</button>
+        <button class="btn-defeat" onclick="duplicateCombatant(${c.id})" style="color:#c8a84b;border-color:#7a6428;" title="Duplicate this combatant">⧉</button>
         <button class="btn-defeat" onclick="toggleDefeated(${c.id})">${c.defeated?'Revive':'Down'}</button>
         <button class="btn-defeat" onclick="removeCombatant(${c.id})" style="color:#7a3030;border-color:#5a2020;">✕</button>
       </div>
