@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>The Chronicles — TTRPG Web App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#0d0a06"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>The Chronicle — TTRPG Journal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
@@ -261,13 +264,163 @@ select option{background:#1a0d05;}
 .round-badge{font-family:'Cinzel Decorative',serif;font-size:1rem;color:var(--gold-light);padding:.4rem .9rem;border:1px solid var(--gold-dim);background:rgba(0,0,0,.3);border-radius:2px;white-space:nowrap;}
 .init-dmg-input{width:52px;text-align:center;font-size:.85rem;padding:.3rem .4rem;}
 @media(max-width:500px){.stats-row{grid-template-columns:repeat(3,1fr)}.form-grid{grid-template-columns:1fr 1fr}}
+
+/* ══════════════════════════════════════
+   MOBILE OPTIMISATION  ≤ 640px
+══════════════════════════════════════ */
+@media(max-width:640px){
+
+  /* ── Header ── */
+  header{ padding:1.5rem .75rem .75rem; }
+  .logo-rune{ font-size:1.5rem; }
+  .subtitle{ font-size:.8rem; letter-spacing:.05em; }
+
+  /* ── Nav: horizontal scroll strip ── */
+  nav{
+    padding:.7rem .5rem;
+    gap:.3rem;
+    justify-content:flex-start;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    flex-wrap:nowrap;
+  }
+  nav::-webkit-scrollbar{ display:none; }
+  .nav-btn{
+    font-size:.65rem;
+    padding:.5rem 1rem;
+    white-space:nowrap;
+    flex-shrink:0;
+    clip-path:none;
+    border-radius:3px;
+    min-height:44px;
+  }
+
+  /* ── Main padding ── */
+  main{ padding:0 .6rem 5rem; }
+  .card{ padding:1rem .9rem; }
+
+  /* ── Buttons — minimum 44px tap target ── */
+  .btn{ padding:.75rem 1.2rem; font-size:.65rem; min-height:44px; }
+  .btn-ghost{ font-size:.65rem; min-height:40px; }
+  .btn-danger{ font-size:.65rem; min-height:40px; }
+  .btn-primary{ min-height:44px; }
+
+  /* ── Forms ── */
+  .form-grid{ grid-template-columns:1fr; }
+  .grid-3col{ grid-template-columns:1fr 1fr !important; }
+  .grid-2col{ grid-template-columns:1fr !important; }
+  input[type=text],input[type=number],textarea,select{
+    font-size:16px; /* prevents iOS zoom on focus */
+    padding:.6rem .75rem;
+    min-height:44px;
+  }
+  label{ font-size:.65rem; }
+
+  /* ── Characters ── */
+  .chars-grid{ grid-template-columns:1fr; }
+  /* character form stat grid: 2 columns on mobile */
+  #stats-form-grid{ grid-template-columns:repeat(2,1fr) !important; }
+  .stats-row{ grid-template-columns:repeat(3,1fr) !important; }
+  .stat-val{ font-size:.95rem; }
+  .stat-label{ font-size:.55rem; }
+  /* hp editor stacks */
+  .hp-editor{ flex-wrap:wrap; }
+  .hp-editor input{ width:60px; }
+  /* edit mode character form grids */
+  .char-body [style*="grid-template-columns:1fr 1fr 1fr"]{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+  }
+
+  /* ── Journal ── */
+  .entry-header{ flex-direction:column; gap:.5rem; }
+  .entry-meta{ white-space:normal; }
+  .tab-toggle button{ padding:.5rem .8rem; font-size:.6rem; min-height:40px; }
+
+  /* ── Dice ── */
+  .dice-section{ grid-template-columns:1fr; }
+  .dice-pad{ grid-template-columns:repeat(4,1fr); gap:.4rem; }
+  .die-btn{ min-height:60px; }
+  .die-label{ font-size:.7rem !important; }
+  .modifier-row{ gap:.4rem; }
+  .modifier-row input{ width:58px; }
+  .result-number{ font-size:3rem; }
+
+  /* ── Backup ── */
+  .backup-grid{ grid-template-columns:1fr; }
+
+  /* ── Initiative ── */
+  .init-layout{ grid-template-columns:1fr; }
+
+  /* Combatant card: stack into 2-row layout on mobile */
+  .init-row{
+    grid-template-columns:1fr auto !important;
+    grid-template-rows:auto auto;
+    gap:.4rem .6rem;
+    padding:.8rem .9rem;
+  }
+  /* Name+badge span full width */
+  .init-row > div:nth-child(2){ grid-column:1; }
+  /* Stat cells go onto second row as a flex strip */
+  .init-stat{ text-align:left; }
+  .init-stat-label{ font-size:.55rem; }
+  .init-stat-val{ font-size:.9rem; }
+  /* Actions wrap naturally */
+  .init-actions{ flex-wrap:wrap; gap:.3rem; grid-column:1/-1; }
+  .init-actions button{ min-height:38px; padding:.4rem .7rem; font-size:.6rem; }
+  .init-dmg-input{ min-height:38px; width:52px; }
+  /* Init num column */
+  .init-num{ font-size:1.1rem; }
+
+  /* Turn controls: two rows */
+  .turn-controls{ gap:.4rem; }
+  .round-badge{ font-size:.85rem; padding:.35rem .7rem; }
+  /* Toggle buttons: scrollable strip */
+  .turn-controls > div[style*="margin-left:auto"]{
+    margin-left:0 !important;
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    display:flex;
+    gap:.3rem;
+    padding-bottom:.2rem;
+    flex-wrap:nowrap;
+  }
+  .init-col-toggle{ white-space:nowrap; flex-shrink:0; min-height:36px; }
+
+  /* Initiative form fields: 2-col grid */
+  .init-field-row{ grid-template-columns:1fr 1fr !important; }
+
+  /* Roll panels */
+  #player-roll-inputs > div{
+    grid-template-columns:1fr 80px !important;
+  }
+
+  /* ── Toast — full width on mobile ── */
+  .toast{
+    left:.75rem;
+    right:.75rem;
+    bottom:1rem;
+    text-align:center;
+    font-size:.7rem;
+  }
+
+  /* ── Mod toggle button ── */
+  .mod-toggle-btn{ font-size:.6rem; min-height:36px; }
+
+  /* ── Backup cards ── */
+  .backup-card{ padding:1.1rem; }
+  .backup-desc{ font-size:.85rem; }
+}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo-rune"></div>
-  <h1>The Chronicles</h1>
-  <p class="subtitle">A TTRPG Web App</p>
+  <div class="logo-rune">⚔️</div>
+  <h1>The Chronicle</h1>
+  <p class="subtitle">A Tome for Heroes &amp; Their Tales</p>
 </header>
 <nav id="nav">
   <button class="nav-btn active" data-tab="characters">Characters</button>
@@ -288,12 +441,12 @@ select option{background:#1a0d05;}
       </button>
     </div>
     <div class="form-grid">
-      <div class="form-full" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem">
+      <div class="form-full grid-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem">
         <div><label>Name</label><input type="text" id="c-name" placeholder="Aldric Thornveil"/></div>
         <div><label>Class</label><input type="text" id="c-class" placeholder="Paladin"/></div>
         <div><label>Race</label><input type="text" id="c-race" placeholder="Half-Elf"/></div>
       </div>
-      <div class="form-full" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem">
+      <div class="form-full grid-3col" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem">
         <div><label>Level</label><input type="number" id="c-level" min="1" max="20" value="1"/></div>
         <div><label>Current HP</label><input type="number" id="c-hp" min="0" value="10"/></div>
         <div><label>Max HP</label><input type="number" id="c-maxhp" min="1" value="10"/></div>
@@ -491,7 +644,7 @@ select option{background:#1a0d05;}
   <div class="card">
     <div class="section-title">New Entry</div>
     <div class="form-grid">
-      <div class="form-full" style="display:grid;grid-template-columns:2fr 1fr;gap:.8rem">
+      <div class="form-full grid-2col" style="display:grid;grid-template-columns:2fr 1fr;gap:.8rem">
         <div><label>Title</label><input type="text" id="j-title" placeholder="The Night the City Burned"/></div>
         <div><label>Category</label>
           <select id="j-tag">
@@ -506,8 +659,8 @@ select option{background:#1a0d05;}
       <div class="form-full">
         <label>Entry</label>
         <div class="tab-toggle">
-          <button id="j-tab-write" class="active" onclick="switchJournalTab('write')"> Write</button>
-          <button id="j-tab-preview" onclick="switchJournalTab('preview')"> Preview</button>
+          <button id="j-tab-write" class="active" onclick="switchJournalTab('write')">✎ Write</button>
+          <button id="j-tab-preview" onclick="switchJournalTab('preview')">👁 Preview</button>
         </div>
         <textarea id="j-body" placeholder="The party arrived at Thornwall as smoke still curled...&#10;&#10;Supports **bold**, *italic*, # Headings, - lists, > quotes, and more." style="min-height:130px"></textarea>
         <div class="md-preview-wrap" id="j-preview"></div>
