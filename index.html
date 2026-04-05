@@ -1885,7 +1885,9 @@ function addCombatant(data){
   const armorDR    = (data && data.armorDR  !== undefined) ? data.armorDR  : (parseInt(armorParts[1])||0);
   const hp      = (data && data.hp  !== undefined) ? data.hp  : (parseInt(document.getElementById('i-hp').value)||10);
   const type    = (data && data.type) ? data.type : document.getElementById('i-type').value;
-  combatants.push({id:Date.now()+Math.random(), name, initMod:initMod, initScore:0, ac, def, armorDie, armorDR, hp, maxhp:hp, type, defeated:false});
+  const acStat = (c.stats||[]).find(s => s.name.trim().toUpperCase() === 'AC');
+const ac = acStat ? (parseInt(acStat.val) || 0) : 0;
+combatants.push({id:Date.now()+Math.random(),name:c.name,initMod:0,initScore:0,ac,def:0,armorDie:0,armorDR:0,hp:c.hp,maxhp:c.maxhp,type:'player',defeated:false});;
   sortInitiative(false);
   renderInitiative();
   if(!data){
