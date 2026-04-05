@@ -1507,8 +1507,8 @@ async function exportPDF(){
 }
 
 // ── Google Drive ──
-let driveTokenClient = null;   // reusable token client instance
-let driveTokenExpiry = 0;      // ms timestamp when current token expires
+let driveTokenClient = null;
+let driveTokenExpiry = 0;
 
 function saveClientId(){
   driveClientId=document.getElementById('drive-client-id').value.trim();
@@ -1529,7 +1529,6 @@ function initDrive(){
   }
   document.getElementById('drive-connect-status').textContent='Connecting…';
   try{
-    // Create the token client once and keep it for silent refreshes
     driveTokenClient=google.accounts.oauth2.initTokenClient({
       client_id: id,
       scope: 'https://www.googleapis.com/auth/drive.file',
@@ -1538,22 +1537,18 @@ function initDrive(){
           setDriveStatus('err','✗ Auth failed: '+resp.error);
           document.getElementById('drive-connect-status').textContent='';
           toast('⚠ Auth failed: '+resp.error,true);
-          // reject any waiting promise
           if(driveTokenClient._reject) driveTokenClient._reject(new Error(resp.error));
           return;
         }
         driveAccessToken = resp.access_token;
-        // tokens last 3600s; refresh 5 min early to be safe
         driveTokenExpiry = Date.now() + (resp.expires_in ? (resp.expires_in - 300)*1000 : 3300*1000);
         setDriveStatus('ok','✓ Connected to Google Drive');
         document.getElementById('drive-backup-btn').disabled=false;
         document.getElementById('drive-signout-btn').style.display='inline-block';
         document.getElementById('drive-connect-status').textContent='Connected ✓';
-        // resolve any waiting promise
         if(driveTokenClient._resolve) driveTokenClient._resolve(resp.access_token);
       }
     });
-    // First connection — show consent screen
     driveTokenClient.requestAccessToken({prompt:'consent'});
   }catch(e){
     setDriveStatus('err','✗ Invalid Client ID or domain not authorised');
@@ -1561,11 +1556,9 @@ function initDrive(){
   }
 }
 
-// Returns a valid token, silently refreshing if expired — no popup after first auth
 function getFreshToken(){
   return new Promise((resolve, reject)=>{
     if(driveAccessToken && Date.now() < driveTokenExpiry){
-      // Token still valid
       resolve(driveAccessToken);
       return;
     }
@@ -1573,11 +1566,9 @@ function getFreshToken(){
       reject(new Error('Not connected — click Connect to Drive first'));
       return;
     }
-    // Attach resolve/reject so the shared callback above can settle this promise
     driveTokenClient._resolve = resolve;
     driveTokenClient._reject  = reject;
     setDriveStatus('warn','↻ Refreshing token…');
-    // prompt:'' means silent refresh — no popup if the user already consented
     driveTokenClient.requestAccessToken({prompt:''});
   });
 }
@@ -1597,7 +1588,6 @@ async function driveBackup(){
   const btn=document.getElementById('drive-backup-btn');
   btn.disabled=true; btn.textContent='⏳ Uploading…';
   try{
-    // Always get a fresh token — silently refreshes if expired
     const token = await getFreshToken();
     const filename=`Chronicless-backup-${new Date().toISOString().slice(0,10)}.json`;
     const content=JSON.stringify(getBackupData(),null,2);
@@ -1626,7 +1616,7 @@ function toggleMods(){
   showMods = !showMods;
   localStorage.setItem('Chronicless_show_mods', showMods);
   applyModToggle();
-  renderChars(); // re-render cards to reflect change
+  renderChars();
 }
 
 function applyModToggle(){
@@ -1645,7 +1635,6 @@ function applyModToggle(){
   }
 }
 
-// ── Initiative Tracker ──
 // ── Theme Toggle ──
 let isLightMode = localStorage.getItem('Chronicless_theme') === 'light';
 
@@ -1681,7 +1670,7 @@ function toggleTorchPanel(){
     btn.textContent = '▼ Timer';
   }
 }
-let torchTotal    = 60 * 60; // seconds
+let torchTotal    = 60 * 60;
 let torchRemaining= 60 * 60;
 let torchInterval = null;
 let torchRunning  = false;
@@ -1784,7 +1773,6 @@ function updateTorchDisplay(){
   if(!timeEl) return;
   timeEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
 
-  // Toggle flame vs orb
   if(isSpell){
     flameEl.style.display = 'none';
     orbWrap.classList.add('visible');
@@ -1793,7 +1781,6 @@ function updateTorchDisplay(){
     orbWrap.classList.remove('visible');
   }
 
-  // Color / state
   if(torchRemaining <= 0){
     timeEl.className = 'torch-time out';
     fillEl.style.background = '#3a1a0a';
@@ -1885,9 +1872,7 @@ function addCombatant(data){
   const armorDR    = (data && data.armorDR  !== undefined) ? data.armorDR  : (parseInt(armorParts[1])||0);
   const hp      = (data && data.hp  !== undefined) ? data.hp  : (parseInt(document.getElementById('i-hp').value)||10);
   const type    = (data && data.type) ? data.type : document.getElementById('i-type').value;
-  const acStat = (c.stats||[]).find(s => s.name.trim().toUpperCase() === 'AC');
-const ac = acStat ? (parseInt(acStat.val) || 0) : 0;
-combatants.push({id:Date.now()+Math.random(),name:c.name,initMod:0,initScore:0,ac,def:0,armorDie:0,armorDR:0,hp:c.hp,maxhp:c.maxhp,type:'player',defeated:false});;
+  combatants.push({id:Date.now()+Math.random(), name, initMod:initMod, initScore:0, ac, def, armorDie, armorDR, hp, maxhp:hp, type, defeated:false});
   sortInitiative(false);
   renderInitiative();
   if(!data){
@@ -1897,12 +1882,15 @@ combatants.push({id:Date.now()+Math.random(),name:c.name,initMod:0,initScore:0,a
   }
 }
 
+// ── FIX: Import characters and read AC from stats array ──
 function importFromChars(){
   if(!characters.length){toast('⚠ No characters in your roster yet',true);return;}
   let added=0;
   characters.forEach(c=>{
     if(!combatants.find(x=>x.name===c.name)){
-      combatants.push({id:Date.now()+Math.random(),name:c.name,initMod:0,initScore:0,ac:0,def:0,armorDie:0,armorDR:0,hp:c.hp,maxhp:c.maxhp,type:'player',defeated:false});
+      const acStat = (c.stats||[]).find(s => s.name.trim().toUpperCase() === 'AC');
+      const ac = acStat ? (parseInt(acStat.val) || 0) : 0;
+      combatants.push({id:Date.now()+Math.random(),name:c.name,initMod:0,initScore:0,ac,def:0,armorDie:0,armorDR:0,hp:c.hp,maxhp:c.maxhp,type:'player',defeated:false});
       added++;
     }
   });
@@ -1917,7 +1905,6 @@ function openPlayerRolls(){
   const panel  = document.getElementById('player-roll-panel');
   const inputs = document.getElementById('player-roll-inputs');
   const btn    = document.getElementById('open-player-rolls-btn');
-  // Build one row per player
   inputs.innerHTML = players.map(c => `
     <div style="display:grid;grid-template-columns:1fr 90px 60px;align-items:center;gap:.5rem;">
       <span style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--parchment)">${c.name}</span>
@@ -1933,7 +1920,6 @@ function openPlayerRolls(){
     </div>`).join('');
   panel.style.display = 'block';
   btn.style.display   = 'none';
-  // Focus first input
   const first = document.querySelector('#player-roll-inputs input');
   if(first) first.focus();
 }
@@ -1950,7 +1936,7 @@ function applyPlayerRolls(){
     const inp = document.getElementById('pr-' + c.id);
     if(!inp) return;
     const roll = parseInt(inp.value);
-    if(isNaN(roll)) return; // skip blanks
+    if(isNaN(roll)) return;
     c.initScore = roll + (c.initMod||0);
     applied++;
   });
@@ -1965,27 +1951,20 @@ function rollGroupInitiative(){
   if(!combatants.length){toast('⚠ Add combatants first',true);return;}
   const roll = Math.floor(Math.random()*6)+1;
   const playersFirst = roll >= 4;
-
-  // Assign initiative values by side:
-  // Winning side gets 20, losing side gets 10 — keeps them grouped and sorted cleanly
   combatants.forEach(c=>{
     if(c.type === 'player'){
       c.initScore = playersFirst ? 20 : 10;
     } else {
-      // monsters and npcs are the enemy side
       c.initScore = playersFirst ? 10 : 20;
     }
   });
-
   sortInitiative(false);
   renderInitiative();
-
   const resultEl  = document.getElementById('grp-result');
   const dieEl     = document.getElementById('grp-die');
   const verdictEl = document.getElementById('grp-verdict');
   resultEl.style.display = 'block';
   dieEl.textContent = roll;
-
   if(playersFirst){
     dieEl.style.color = '#6aaa6a';
     verdictEl.style.color = '#6aaa6a';
@@ -1995,14 +1974,11 @@ function rollGroupInitiative(){
     verdictEl.style.color = '#cc5555';
     verdictEl.textContent = '1–3 · Enemies act first!';
   }
-
   toast('d6 rolled — ' + (playersFirst ? 'Players go first!' : 'Enemies go first!'));
 }
 
 function rollContestedInitiative(){
   if(!combatants.length){toast('⚠ Add combatants first',true);return;}
-
-  // Keep rolling until no tie
   let playerRoll, enemyRoll;
   let tries = 0;
   do {
@@ -2010,10 +1986,7 @@ function rollContestedInitiative(){
     enemyRoll  = Math.floor(Math.random()*6)+1;
     tries++;
   } while(playerRoll === enemyRoll && tries < 10);
-
   const playersFirst = playerRoll > enemyRoll;
-
-  // Assign sides
   combatants.forEach(c=>{
     if(c.type === 'player'){
       c.initScore = playersFirst ? 20 : 10;
@@ -2021,20 +1994,15 @@ function rollContestedInitiative(){
       c.initScore = playersFirst ? 10 : 20;
     }
   });
-
   sortInitiative(false);
   renderInitiative();
-
-  // Update UI
   const resultEl  = document.getElementById('contested-result');
   const pRollEl   = document.getElementById('cont-player-roll');
   const eRollEl   = document.getElementById('cont-enemy-roll');
   const verdictEl = document.getElementById('cont-verdict');
-
   resultEl.style.display = 'block';
   pRollEl.textContent = playerRoll;
   eRollEl.textContent = enemyRoll;
-
   if(playersFirst){
     verdictEl.textContent   = '⚔ Players win initiative!';
     verdictEl.style.color   = '#6aaa6a';
@@ -2048,11 +2016,9 @@ function rollContestedInitiative(){
     pRollEl.style.color = '#5aaabb';
     eRollEl.style.color = '#cc5555';
   }
-
   if(tries > 1){
     verdictEl.textContent += ' (tie re-rolled '+tries+'x)';
   }
-
   toast(playersFirst ? '⚔ Players win the contested roll!' : '💀 Enemies win the contested roll!');
 }
 
@@ -2085,7 +2051,6 @@ function removeCombatant(id){
 function duplicateCombatant(id){
   const src = combatants.find(c=>c.id===id);
   if(!src) return;
-  // Count existing copies to auto-number the name
   const baseName = src.name.replace(/ #\d+$/, '');
   const copies = combatants.filter(c => c.name === baseName || c.name.match(new RegExp('^' + baseName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ' #\\d+$')));
   const newName = baseName + ' #' + (copies.length + 1);
@@ -2103,7 +2068,6 @@ function duplicateCombatant(id){
     type:      src.type,
     defeated:  false
   };
-  // Insert clone right after the original
   const idx = combatants.findIndex(c=>c.id===id);
   combatants.splice(idx+1, 0, clone);
   renderInitiative();
@@ -2152,18 +2116,12 @@ function nextTurn(){
   if(!combatants.length) return;
   const alive=combatants.filter(c=>!c.defeated);
   if(!alive.length){toast('All combatants defeated!');return;}
-  // advance to next non-defeated
   let attempts=0;
   do {
     currentTurn=(currentTurn+1)%combatants.length;
     attempts++;
     if(attempts>combatants.length){ break; }
   } while(combatants[currentTurn].defeated);
-  // check if we wrapped a full round
-  if(currentTurn===0 || (currentTurn < combatants.filter((_,i)=>i<currentTurn).length)){
-    // detect round wrap by tracking index
-  }
-  // simpler round tracking: increment round when turn wraps to index 0 or below original
   renderInitiative();
 }
 
