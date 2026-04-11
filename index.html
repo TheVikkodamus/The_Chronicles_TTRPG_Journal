@@ -1388,7 +1388,6 @@ function restoreJSON(e){
 
 // ── PDF Markdown Helpers ──
 
-// Strip inline markdown to plain text
 function pdfStripInline(text){
   return text
     .replace(/\*\*(.*?)\*\*/g,'$1')
@@ -1397,262 +1396,124 @@ function pdfStripInline(text){
     .replace(/`(.*?)`/g,'$1');
 }
 
-// Render inline text with bold/italic/code segments, word-wrapping within maxW
 function pdfRenderInline(doc, text, x, y, maxW, checkPage, baseSize){
-  baseSize = baseSize || 9.5;
-  var tokens=[];
-  var re=/(\*\*([\s\S]+?)\*\*|\*([\s\S]+?)\*|`([\s\S]+?)`)/g;
-  var last=0, m;
-  while((m=re.exec(text))!==null){
-    if(m.index>last) tokens.push({t:'n',s:text.slice(last,m.index)});
-    if(m[0].startsWith('**'))      tokens.push({t:'b',s:m[2]});
-    else if(m[0].startsWith('*'))  tokens.push({t:'i',s:m[3]});
-    else                           tokens.push({t:'c',s:m[4]});
-    last=m.index+m[0].length;
+  baseSize = baseSize || 10;
+  var tokens = [];
+  var re = /(\*\*([\s\S]+?)\*\*|\*([\s\S]+?)\*|`([\s\S]+?)`)/g;
+  var last = 0, m;
+  while((m = re.exec(text)) !== null){
+    if(m.index > last) tokens.push({t:'n', s:text.slice(last, m.index)});
+    if(m[0].startsWith('**'))     tokens.push({t:'b', s:m[2]});
+    else if(m[0].startsWith('*')) tokens.push({t:'i', s:m[3]});
+    else                          tokens.push({t:'c', s:m[4]});
+    last = m.index + m[0].length;
   }
-  if(last<text.length) tokens.push({t:'n',s:text.slice(last)});
+  if(last < text.length) tokens.push({t:'n', s:text.slice(last)});
 
-  var lineH=baseSize*0.55;
-  var cx=x;
+  var lineH = baseSize * 0.58;
+  var cx = x;
 
-  for(var ti=0;ti<tokens.length;ti++){
-    var tok=tokens[ti];
-    if(tok.t==='b'){      doc.setFont('times','bold');     doc.setFontSize(baseSize); doc.setTextColor(235,220,185); }
-    else if(tok.t==='i'){ doc.setFont('times','italic');   doc.setFontSize(baseSize); doc.setTextColor(210,190,148); }
-    else if(tok.t==='c'){ doc.setFont('courier','normal'); doc.setFontSize(baseSize-1); doc.setTextColor(195,178,120); }
-    else {                doc.setFont('times','italic');   doc.setFontSize(baseSize); doc.setTextColor(195,178,132); }
+  for(var ti = 0; ti < tokens.length; ti++){
+    var tok = tokens[ti];
+    if(tok.t==='b'){      doc.setFont('times','bold');     doc.setFontSize(baseSize);   doc.setTextColor(20,12,5);   }
+    else if(tok.t==='i'){ doc.setFont('times','italic');   doc.setFontSize(baseSize);   doc.setTextColor(40,28,15);  }
+    else if(tok.t==='c'){ doc.setFont('courier','normal'); doc.setFontSize(baseSize-1); doc.setTextColor(50,40,25);  }
+    else {                doc.setFont('times','normal');   doc.setFontSize(baseSize);   doc.setTextColor(30,20,10);  }
 
     var words = tok.s.split(' ');
-    for(var wi=0;wi<words.length;wi++){
-      var word = words[wi] + (wi<words.length-1?' ':'');
+    for(var wi = 0; wi < words.length; wi++){
+      var word = words[wi] + (wi < words.length - 1 ? ' ' : '');
       if(!word) continue;
-      var ww=doc.getTextWidth(word);
-      if(cx+ww > x+maxW && cx>x){
-        y+=lineH; checkPage(lineH+1); cx=x;
+      var ww = doc.getTextWidth(word);
+      if(cx + ww > x + maxW && cx > x){
+        y += lineH;
+        checkPage(lineH + 2);
+        cx = x;
       }
-      doc.text(word,cx,y);
-      cx+=ww;
+      doc.text(word, cx, y);
+      cx += ww;
     }
   }
-  return y+lineH;
+  return y + lineH;
 }
 
-// Full block-level markdown renderer for jsPDF
-function pdfRenderMD(doc, mdText, x, y, maxW, checkPage){
-  var lines=(mdText||'').split('\n');
-  for(var i=0;i<lines.length;i++){
-    var raw=lines[i];
-
-    // Blank line
-    if(!raw.trim()){ y+=2.5; continue; }
-
-    // H1
-    if(/^# /.test(raw)){
-      checkPage(10);
-      doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(232,201,106);
-      var wrapped=doc.splitTextToSize(raw.slice(2),maxW);
-      for(var j=0;j<wrapped.length;j++){checkPage(7);doc.text(wrapped[j],x,y);y+=6.5;}
-      doc.setDrawColor(120,90,25); doc.setLineWidth(0.2); doc.line(x,y-1,x+maxW*0.6,y-1);
-      y+=2; continue;
-    }
-    // H2
-    if(/^## /.test(raw)){
-      checkPage(9);
-      doc.setFont('times','bold'); doc.setFontSize(11); doc.setTextColor(200,168,75);
-      var wrapped=doc.splitTextToSize(raw.slice(3),maxW);
-      for(var j=0;j<wrapped.length;j++){checkPage(6);doc.text(wrapped[j],x,y);y+=5.5;}
-      y+=1; continue;
-    }
-    // H3
-    if(/^### /.test(raw)){
-      checkPage(8);
-      doc.setFont('times','bolditalic'); doc.setFontSize(10); doc.setTextColor(175,148,65);
-      var wrapped=doc.splitTextToSize(raw.slice(4),maxW);
-      for(var j=0;j<wrapped.length;j++){checkPage(5.5);doc.text(wrapped[j],x,y);y+=5;}
-      y+=1; continue;
-    }
-    // HR
-    if(/^[-*_]{3,}\s*$/.test(raw.trim())){
-      checkPage(5);
-      doc.setDrawColor(70,50,15); doc.setLineWidth(0.25);
-      doc.line(x,y-1.5,x+maxW,y-1.5); y+=4; continue;
-    }
-    // Blockquote
-    if(/^> /.test(raw)){
-      checkPage(6);
-      var content=pdfStripInline(raw.slice(2));
-      var wrapped=doc.splitTextToSize(content,maxW-7);
-      var bqH=wrapped.length*4.8+2;
-      doc.setFillColor(22,14,5); doc.rect(x,y-3.5,2,bqH,'F');
-      doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(150,128,78);
-      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+5,y);y+=4.8;}
-      y+=2; continue;
-    }
-    // Unordered list
-    if(/^[-*+] /.test(raw)){
-      checkPage(5);
-      var item=pdfStripInline(raw.slice(2));
-      var wrapped=doc.splitTextToSize(item,maxW-7);
-      doc.setFont('times','normal'); doc.setFontSize(9.5); doc.setTextColor(185,165,115);
-      doc.text('\u00b7',x+2,y);
-      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+6,y);if(j<wrapped.length-1)y+=4.8;}
-      y+=5.2; continue;
-    }
-    // Ordered list
-    var olM=raw.match(/^(\d+)\. (.+)/);
-    if(olM){
-      checkPage(5);
-      var item=pdfStripInline(olM[2]);
-      var wrapped=doc.splitTextToSize(item,maxW-8);
-      doc.setFont('times','normal'); doc.setFontSize(9.5); doc.setTextColor(185,165,115);
-      doc.text(olM[1]+'.',x+1.5,y);
-      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+7,y);if(j<wrapped.length-1)y+=4.8;}
-      y+=5.2; continue;
-    }
-    // Normal paragraph with inline formatting
-    checkPage(6);
-    y=pdfRenderInline(doc,raw,x,y,maxW,checkPage,9.5);
-    y+=0.8;
-  }
-  return y;
-}
-
-// ── PDF Markdown Helpers ──
-
-// Strip inline markdown to plain text
-function pdfStripInline(text){
-  return text
-    .replace(/\*\*(.*?)\*\*/g,'$1')
-    .replace(/\*(.*?)\*/g,'$1')
-    .replace(/~~(.*?)~~/g,'$1')
-    .replace(/`(.*?)`/g,'$1');
-}
-
-// Render inline text with bold/italic/code segments, word-wrapping within maxW
-function pdfRenderInline(doc, text, x, y, maxW, checkPage, baseSize){
-  baseSize = baseSize || 9.5;
-  var tokens=[];
-  var re=/(\*\*([\s\S]+?)\*\*|\*([\s\S]+?)\*|`([\s\S]+?)`)/g;
-  var last=0, m;
-  while((m=re.exec(text))!==null){
-    if(m.index>last) tokens.push({t:'n',s:text.slice(last,m.index)});
-    if(m[0].startsWith('**'))      tokens.push({t:'b',s:m[2]});
-    else if(m[0].startsWith('*'))  tokens.push({t:'i',s:m[3]});
-    else                           tokens.push({t:'c',s:m[4]});
-    last=m.index+m[0].length;
-  }
-  if(last<text.length) tokens.push({t:'n',s:text.slice(last)});
-
-  var lineH=baseSize*0.55;
-  var cx=x;
-
-  for(var ti=0;ti<tokens.length;ti++){
-    var tok=tokens[ti];
-    if(tok.t==='b'){      doc.setFont('times','bold');     doc.setFontSize(baseSize); doc.setTextColor(235,220,185); }
-    else if(tok.t==='i'){ doc.setFont('times','italic');   doc.setFontSize(baseSize); doc.setTextColor(210,190,148); }
-    else if(tok.t==='c'){ doc.setFont('courier','normal'); doc.setFontSize(baseSize-1); doc.setTextColor(195,178,120); }
-    else {                doc.setFont('times','italic');   doc.setFontSize(baseSize); doc.setTextColor(195,178,132); }
-
-    var words = tok.s.split(' ');
-    for(var wi=0;wi<words.length;wi++){
-      var word = words[wi] + (wi<words.length-1?' ':'');
-      if(!word) continue;
-      var ww=doc.getTextWidth(word);
-      if(cx+ww > x+maxW && cx>x){
-        y+=lineH; checkPage(lineH+1); cx=x;
-      }
-      doc.text(word,cx,y);
-      cx+=ww;
-    }
-  }
-  return y+lineH;
-}
-
-// Render a parsed markdown table into the PDF
 function pdfRenderTable(doc, headers, dataRows, x, y, maxW, checkPage){
   if(!headers.length) return y;
-  const cols  = headers.length;
-  const colW  = maxW / cols;
-  const headH = 7.5;
-  const rowH  = 6.5;
+  var cols  = headers.length;
+  var colW  = maxW / cols;
+  var headH = 7;
+  var rowH  = 6;
 
-  checkPage(headH + dataRows.length * rowH + 6);
-
-  // ── Header row ──
-  doc.setFillColor(35,22,8);
+  // Header
+  checkPage(headH + rowH + 4);
+  doc.setFillColor(60,40,20);
   doc.rect(x, y, maxW, headH, 'F');
-  doc.setDrawColor(140,108,40); doc.setLineWidth(0.25);
-  doc.rect(x, y, maxW, headH, 'S');
 
-  doc.setFont('times','bold'); doc.setFontSize(8); doc.setTextColor(200,168,75);
-  headers.forEach((h, ci) => {
-    const cx = x + ci * colW;
+  doc.setFont('times','bold'); doc.setFontSize(8); doc.setTextColor(250,245,235);
+  for(var ci = 0; ci < headers.length; ci++){
+    var cx = x + ci * colW;
     if(ci > 0){
-      doc.setDrawColor(80,55,15); doc.setLineWidth(0.15);
+      doc.setDrawColor(100,70,35); doc.setLineWidth(0.2);
       doc.line(cx, y, cx, y + headH);
     }
-    doc.text(pdfStripInline(h).toUpperCase(), cx + 2, y + 5, { maxWidth: colW - 4 });
-  });
+    doc.text(pdfStripInline(headers[ci]).toUpperCase(), cx + 2, y + 4.8, { maxWidth: colW - 4 });
+  }
+  doc.setDrawColor(60,40,20); doc.setLineWidth(0.4);
+  doc.rect(x, y, maxW, headH, 'S');
   y += headH;
 
-  // ── Data rows ──
-  dataRows.forEach((row, ri) => {
+  // Data rows
+  for(var ri = 0; ri < dataRows.length; ri++){
     checkPage(rowH + 2);
+    var row = dataRows[ri];
     if(ri % 2 === 0){
-      doc.setFillColor(20,13,5);
+      doc.setFillColor(242,237,228);
       doc.rect(x, y, maxW, rowH, 'F');
     }
-    doc.setDrawColor(50,34,12); doc.setLineWidth(0.1);
+    doc.setDrawColor(180,160,130); doc.setLineWidth(0.1);
     doc.rect(x, y, maxW, rowH, 'S');
 
-    doc.setFont('times','italic'); doc.setFontSize(8.5); doc.setTextColor(195,178,132);
-    row.forEach((cell, ci) => {
-      if(ci >= cols) return;
-      const cx = x + ci * colW;
-      if(ci > 0){
-        doc.setDrawColor(50,34,12); doc.setLineWidth(0.1);
-        doc.line(cx, y, cx, y + rowH);
+    doc.setFont('times','normal'); doc.setFontSize(9); doc.setTextColor(30,20,10);
+    for(var ci2 = 0; ci2 < cols; ci2++){
+      if(ci2 >= row.length) break;
+      var cellX = x + ci2 * colW;
+      if(ci2 > 0){
+        doc.setDrawColor(180,160,130); doc.setLineWidth(0.1);
+        doc.line(cellX, y, cellX, y + rowH);
       }
-      doc.text(pdfStripInline(cell), cx + 2, y + 4.5, { maxWidth: colW - 4 });
-    });
+      doc.text(pdfStripInline(row[ci2]), cellX + 2, y + 4.2, { maxWidth: colW - 4 });
+    }
     y += rowH;
-  });
+  }
 
-  // bottom rule
-  doc.setDrawColor(100,75,25); doc.setLineWidth(0.2);
+  doc.setDrawColor(60,40,20); doc.setLineWidth(0.3);
   doc.line(x, y, x + maxW, y);
   return y + 4;
 }
 
-// Full block-level markdown renderer for jsPDF
 function pdfRenderMD(doc, mdText, x, y, maxW, checkPage){
-  var lines=(mdText||'').split('\n');
+  var lines = (mdText||'').split('\n');
 
   function parseRow(line){
-    return line.split('|').slice(1,-1).map(function(c){return c.trim();});
+    return line.split('|').slice(1,-1).map(function(c){ return c.trim(); });
   }
   function isSepRow(line){
     return /^\|[\s|:-]+\|/.test(line);
   }
 
-  for(var i=0;i<lines.length;i++){
-    var raw=lines[i];
+  for(var i = 0; i < lines.length; i++){
+    var raw = lines[i];
 
-    // Blank line
-    if(!raw.trim()){ y+=2.5; continue; }
+    if(!raw.trim()){ y += 3; continue; }
 
-    // ── Table block — collect all consecutive | lines ──
+    // Table
     if(/^\|/.test(raw)){
-      var tableLines=[];
-      while(i<lines.length && /^\|/.test(lines[i])){
-        tableLines.push(lines[i]);
-        i++;
-      }
-      i--; // for-loop will increment
-
-      var headers=[], dataRows=[];
-      tableLines.forEach(function(tl,ti){
-        if(ti===0)             headers  = parseRow(tl);
+      var tableLines = [];
+      while(i < lines.length && /^\|/.test(lines[i])){ tableLines.push(lines[i]); i++; }
+      i--;
+      var headers = [], dataRows = [];
+      tableLines.forEach(function(tl, ti){
+        if(ti === 0)           headers = parseRow(tl);
         else if(!isSepRow(tl)) dataRows.push(parseRow(tl));
       });
       y = pdfRenderTable(doc, headers, dataRows, x, y, maxW, checkPage);
@@ -1661,71 +1522,76 @@ function pdfRenderMD(doc, mdText, x, y, maxW, checkPage){
 
     // H1
     if(/^# /.test(raw)){
-      checkPage(10);
-      doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(232,201,106);
-      var wrapped=doc.splitTextToSize(raw.slice(2),maxW);
-      for(var j=0;j<wrapped.length;j++){checkPage(7);doc.text(wrapped[j],x,y);y+=6.5;}
-      doc.setDrawColor(120,90,25); doc.setLineWidth(0.2); doc.line(x,y-1,x+maxW*0.6,y-1);
-      y+=2; continue;
+      checkPage(14);
+      doc.setFont('times','bold'); doc.setFontSize(15); doc.setTextColor(20,12,5);
+      var wH1 = doc.splitTextToSize(raw.slice(2), maxW);
+      for(var j=0;j<wH1.length;j++){ checkPage(9); doc.text(wH1[j],x,y); y+=7.5; }
+      doc.setDrawColor(60,40,20); doc.setLineWidth(0.4);
+      doc.line(x, y, x+maxW, y);
+      y += 4; continue;
     }
     // H2
     if(/^## /.test(raw)){
-      checkPage(9);
-      doc.setFont('times','bold'); doc.setFontSize(11); doc.setTextColor(200,168,75);
-      var wrapped=doc.splitTextToSize(raw.slice(3),maxW);
-      for(var j=0;j<wrapped.length;j++){checkPage(6);doc.text(wrapped[j],x,y);y+=5.5;}
-      y+=1; continue;
+      checkPage(11);
+      doc.setFont('times','bold'); doc.setFontSize(12); doc.setTextColor(30,18,8);
+      var wH2 = doc.splitTextToSize(raw.slice(3), maxW);
+      for(var j=0;j<wH2.length;j++){ checkPage(7); doc.text(wH2[j],x,y); y+=6; }
+      doc.setDrawColor(120,90,50); doc.setLineWidth(0.2);
+      doc.line(x, y, x+maxW*0.4, y);
+      y += 3; continue;
     }
     // H3
     if(/^### /.test(raw)){
-      checkPage(8);
-      doc.setFont('times','bolditalic'); doc.setFontSize(10); doc.setTextColor(175,148,65);
-      var wrapped=doc.splitTextToSize(raw.slice(4),maxW);
-      for(var j=0;j<wrapped.length;j++){checkPage(5.5);doc.text(wrapped[j],x,y);y+=5;}
-      y+=1; continue;
+      checkPage(9);
+      doc.setFont('times','bolditalic'); doc.setFontSize(11); doc.setTextColor(40,25,10);
+      var wH3 = doc.splitTextToSize(raw.slice(4), maxW);
+      for(var j=0;j<wH3.length;j++){ checkPage(6); doc.text(wH3[j],x,y); y+=5.5; }
+      y += 2; continue;
     }
     // HR
     if(/^[-*_]{3,}\s*$/.test(raw.trim())){
-      checkPage(5);
-      doc.setDrawColor(70,50,15); doc.setLineWidth(0.25);
-      doc.line(x,y-1.5,x+maxW,y-1.5); y+=4; continue;
+      checkPage(6);
+      doc.setDrawColor(140,110,70); doc.setLineWidth(0.3);
+      doc.line(x, y-1, x+maxW, y-1); y += 4; continue;
     }
     // Blockquote
     if(/^> /.test(raw)){
-      checkPage(6);
-      var content=pdfStripInline(raw.slice(2));
-      var wrapped=doc.splitTextToSize(content,maxW-7);
-      var bqH=wrapped.length*4.8+2;
-      doc.setFillColor(22,14,5); doc.rect(x,y-3.5,2,bqH,'F');
-      doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(150,128,78);
-      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+5,y);y+=4.8;}
-      y+=2; continue;
+      checkPage(8);
+      var bqContent = pdfStripInline(raw.slice(2));
+      var bqLines   = doc.splitTextToSize(bqContent, maxW - 8);
+      doc.setFillColor(235,228,215);
+      doc.rect(x, y-3.5, maxW, bqLines.length*5+4, 'F');
+      doc.setFillColor(80,55,25);
+      doc.rect(x, y-3.5, 2.5, bqLines.length*5+4, 'F');
+      doc.setFont('times','italic'); doc.setFontSize(10); doc.setTextColor(50,35,15);
+      for(var j=0;j<bqLines.length;j++){ checkPage(6); doc.text(bqLines[j], x+6, y); y+=5; }
+      y += 3; continue;
     }
     // Unordered list
     if(/^[-*+] /.test(raw)){
-      checkPage(5);
-      var item=pdfStripInline(raw.slice(2));
-      var wrapped=doc.splitTextToSize(item,maxW-7);
-      doc.setFont('times','normal'); doc.setFontSize(9.5); doc.setTextColor(185,165,115);
-      doc.text('\u00b7',x+2,y);
-      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+6,y);if(j<wrapped.length-1)y+=4.8;}
-      y+=5.2; continue;
+      checkPage(6);
+      var ulItem  = pdfStripInline(raw.slice(2));
+      var ulLines = doc.splitTextToSize(ulItem, maxW - 7);
+      doc.setFont('times','normal'); doc.setFontSize(10); doc.setTextColor(30,20,10);
+      doc.text('\u2022', x+2, y);
+      for(var j=0;j<ulLines.length;j++){ checkPage(5); doc.text(ulLines[j], x+6, y); if(j<ulLines.length-1) y+=5; }
+      y += 5.5; continue;
     }
     // Ordered list
-    var olM=raw.match(/^(\d+)\. (.+)/);
+    var olM = raw.match(/^(\d+)\. (.+)/);
     if(olM){
-      checkPage(5);
-      var item=pdfStripInline(olM[2]);
-      var wrapped=doc.splitTextToSize(item,maxW-8);
-      doc.setFont('times','normal'); doc.setFontSize(9.5); doc.setTextColor(185,165,115);
-      doc.text(olM[1]+'.',x+1.5,y);
-      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+7,y);if(j<wrapped.length-1)y+=4.8;}
-      y+=5.2; continue;
+      checkPage(6);
+      var olItem  = pdfStripInline(olM[2]);
+      var olLines = doc.splitTextToSize(olItem, maxW - 8);
+      doc.setFont('times','normal'); doc.setFontSize(10); doc.setTextColor(30,20,10);
+      doc.text(olM[1]+'.', x+1.5, y);
+      for(var j=0;j<olLines.length;j++){ checkPage(5); doc.text(olLines[j], x+7, y); if(j<olLines.length-1) y+=5; }
+      y += 5.5; continue;
     }
-    // Normal paragraph with inline formatting
-    checkPage(6);
-    y=pdfRenderInline(doc,raw,x,y,maxW,checkPage,9.5);
-    y+=0.8;
+    // Normal paragraph
+    checkPage(7);
+    y = pdfRenderInline(doc, raw, x, y, maxW, checkPage, 10);
+    y += 1;
   }
   return y;
 }
@@ -1739,78 +1605,100 @@ async function exportPDF(){
 
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210, M=18, CW=W-M*2;
+  const W=210, M=20, CW=W-M*2;
   let y=0;
 
-  function drawBg(){
-    doc.setFillColor(26,20,16); doc.rect(0,0,W,297,'F');
-    doc.setDrawColor(200,168,75); doc.setLineWidth(0.3); doc.rect(8,8,W-16,281,'S');
-    doc.setDrawColor(100,80,32); doc.setLineWidth(0.1); doc.rect(10,10,W-20,277,'S');
+  // Clean white paper page — no background graphics
+  function newPage(){
+    doc.addPage();
+    y = M;
+    // subtle page border only
+    doc.setDrawColor(180,160,130); doc.setLineWidth(0.2);
+    doc.rect(10, 10, W-20, 277, 'S');
   }
   function checkPage(need=10){
-    if(y+need>272){doc.addPage();y=M;drawBg();}
+    if(y + need > 272){ newPage(); }
   }
 
-  // ── Characters (starts on page 1, no title page) ──
+  // ── First page setup ──
+  doc.setFillColor(255,255,255); doc.rect(0,0,W,297,'F');
+  doc.setDrawColor(180,160,130); doc.setLineWidth(0.2);
+  doc.rect(10,10,W-20,277,'S');
+  y = M;
+
+  // ── Characters ──
   if(characters.length){
-    drawBg(); y=M;
-    doc.setFont('times','bold'); doc.setFontSize(20); doc.setTextColor(232,201,106);
-    doc.text('Characters',W/2,y+7,{align:'center'}); y+=14;
-    doc.setDrawColor(200,168,75); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=8;
+    // Section heading
+    doc.setFont('times','bold'); doc.setFontSize(22); doc.setTextColor(20,12,5);
+    doc.text('Characters', W/2, y+9, {align:'center'}); y+=13;
+    doc.setDrawColor(60,40,20); doc.setLineWidth(0.5);
+    doc.line(M, y, W-M, y); y+=8;
     bar.style.width='20%';
 
     characters.forEach((c,ci)=>{
-      checkPage(60);
-      doc.setFillColor(35,22,8); doc.rect(M,y,CW,14,'F');
-      doc.setDrawColor(140,108,40); doc.setLineWidth(0.25); doc.rect(M,y,CW,14,'S');
-      doc.setFont('times','bold'); doc.setFontSize(14); doc.setTextColor(232,201,106);
-      doc.text(c.name,M+4,y+9);
-      doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(120,96,38);
-      doc.text(`Lvl ${c.level}  ·  ${c.race}  ·  ${c.cls}`,M+4,y+13);
-      const hpPct=c.maxhp>0?c.hp/c.maxhp:0;
-      const hpCol=hpPct>0.5?[60,160,60]:hpPct>0.25?[200,140,40]:[180,50,50];
-      doc.setFont('times','bold'); doc.setFontSize(9); doc.setTextColor(...hpCol);
-      doc.text(`HP  ${c.hp} / ${c.maxhp}`,W-M-3,y+9,{align:'right'});
-      y+=18;
+      checkPage(55);
 
-      const stats=c.stats||[];
+      // Name bar — dark ink header
+      doc.setFillColor(40,25,10);
+      doc.rect(M, y, CW, 13, 'F');
+      doc.setFont('times','bold'); doc.setFontSize(14); doc.setTextColor(255,250,240);
+      doc.text(c.name, M+4, y+8.5);
+      doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(200,180,150);
+      doc.text(`Level ${c.level}  ·  ${c.race}  ·  ${c.cls}`, M+4, y+12.5);
+      // HP right-aligned in header
+      doc.setFont('times','bold'); doc.setFontSize(9); doc.setTextColor(200,180,150);
+      doc.text(`HP ${c.hp} / ${c.maxhp}`, W-M-3, y+8.5, {align:'right'});
+      y += 16;
+
+      // Stat boxes — light fill, dark text
+      const stats = c.stats||[];
       if(stats.length){
-        const cols=Math.min(8,stats.length);
-        const bw=CW/cols;
+        const cols = Math.min(8, stats.length);
+        const bw   = CW / cols;
         stats.slice(0,cols).forEach((s,idx)=>{
-          const bx=M+idx*bw;
-          doc.setFillColor(18,11,4); doc.rect(bx,y,bw-0.8,19,'F');
-          doc.setDrawColor(55,38,14); doc.setLineWidth(0.2); doc.rect(bx,y,bw-0.8,19,'S');
-          doc.setFont('times','bold'); doc.setFontSize(6); doc.setTextColor(110,86,30);
-          doc.text((s.name||'').toUpperCase().slice(0,6),bx+bw/2-0.4,y+5,{align:'center'});
-          doc.setFont('times','bold'); doc.setFontSize(12); doc.setTextColor(245,237,216);
-          doc.text(s.val!==''?String(s.val):'—',bx+bw/2-0.4,y+13,{align:'center'});
+          const bx = M + idx*bw;
+          // alternating light fills
+          doc.setFillColor(idx%2===0 ? 245 : 235, idx%2===0 ? 240 : 232, idx%2===0 ? 230 : 218);
+          doc.rect(bx, y, bw-0.5, 18, 'F');
+          doc.setDrawColor(140,110,70); doc.setLineWidth(0.2);
+          doc.rect(bx, y, bw-0.5, 18, 'S');
+          // stat name
+          doc.setFont('times','bold'); doc.setFontSize(6); doc.setTextColor(80,55,25);
+          doc.text((s.name||'').toUpperCase().slice(0,6), bx+bw/2-0.3, y+4.5, {align:'center'});
+          // stat value
+          doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(15,10,5);
+          doc.text(s.val!==''?String(s.val):'—', bx+bw/2-0.3, y+12.5, {align:'center'});
+          // modifier
           if(s.mod!==''){
-            doc.setFont('times','italic'); doc.setFontSize(7); doc.setTextColor(200,168,75);
-            doc.text(String(s.mod),bx+bw/2-0.4,y+17.5,{align:'center'});
+            doc.setFont('times','italic'); doc.setFontSize(7); doc.setTextColor(80,55,25);
+            doc.text(String(s.mod), bx+bw/2-0.3, y+17, {align:'center'});
           }
         });
-        y+=23;
+        y += 21;
       }
 
-      const barW=CW-2;
-      const hpFill=Math.max(0,Math.min(1,c.hp/c.maxhp));
-      doc.setFillColor(20,12,5); doc.rect(M+1,y,barW,3,'F');
-      const fc=hpFill>0.5?[50,140,50]:hpFill>0.25?[180,120,30]:[160,40,40];
-      doc.setFillColor(...fc); doc.rect(M+1,y,barW*hpFill,3,'F');
-      doc.setDrawColor(50,34,12); doc.setLineWidth(0.1); doc.rect(M+1,y,barW,3,'S');
-      y+=7;
+      // HP bar — thin strip below stats
+      const barW   = CW;
+      const hpFill = Math.max(0, Math.min(1, c.hp/c.maxhp));
+      doc.setFillColor(220,210,195); doc.rect(M, y, barW, 2.5, 'F');
+      const fc = hpFill > 0.5 ? [60,100,60] : hpFill > 0.25 ? [140,100,30] : [160,40,40];
+      doc.setFillColor(...fc); doc.rect(M, y, barW*hpFill, 2.5, 'F');
+      doc.setDrawColor(140,110,70); doc.setLineWidth(0.1);
+      doc.rect(M, y, barW, 2.5, 'S');
+      y += 6;
 
+      // Notes
       if(c.notes){
-        checkPage(12);
-        y=pdfRenderMD(doc,c.notes,M+3,y,CW-7,checkPage);
-        y+=3;
+        checkPage(14);
+        y = pdfRenderMD(doc, c.notes, M, y, CW, checkPage);
+        y += 2;
       }
 
-      if(ci<characters.length-1){
-        checkPage(8);
-        doc.setDrawColor(50,34,12); doc.setLineWidth(0.15);
-        doc.line(M+12,y+1,W-M-12,y+1); y+=9;
+      // Divider between characters
+      if(ci < characters.length-1){
+        checkPage(12);
+        doc.setDrawColor(140,110,70); doc.setLineWidth(0.2);
+        doc.line(M+10, y+2, W-M-10, y+2); y+=10;
       }
     });
     bar.style.width='60%';
@@ -1818,32 +1706,53 @@ async function exportPDF(){
 
   // ── Journal ──
   if(journal.length){
-    if(characters.length){ doc.addPage(); drawBg(); y=M; }
-    else { drawBg(); y=M; }
-    doc.setFont('times','bold'); doc.setFontSize(20); doc.setTextColor(232,201,106);
-    doc.text('Journal',W/2,y+7,{align:'center'}); y+=14;
-    doc.setDrawColor(200,168,75); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=8;
+    // Always start journal on a fresh page
+    doc.addPage();
+    doc.setFillColor(255,255,255); doc.rect(0,0,W,297,'F');
+    doc.setDrawColor(180,160,130); doc.setLineWidth(0.2);
+    doc.rect(10,10,W-20,277,'S');
+    y = M;
 
-    const tc={session:[85,115,55],lore:[55,85,115],quest:[115,85,40],npc:[100,55,100],other:[60,60,60]};
+    doc.setFont('times','bold'); doc.setFontSize(22); doc.setTextColor(20,12,5);
+    doc.text('Journal', W/2, y+9, {align:'center'}); y+=13;
+    doc.setDrawColor(60,40,20); doc.setLineWidth(0.5);
+    doc.line(M, y, W-M, y); y+=8;
+
+    const tagColors={
+      session:[60,100,50], lore:[40,70,110], quest:[110,75,30], npc:[90,45,90], other:[70,70,70]
+    };
     journal.forEach((e,ei)=>{
-      checkPage(32);
-      const col=tc[e.tag]||tc.other;
-      doc.setFillColor(...col); doc.roundedRect(M,y,32,5.5,1,1,'F');
-      doc.setFont('times','bold'); doc.setFontSize(6); doc.setTextColor(245,237,216);
-      doc.text(tagLabel[e.tag].toUpperCase(),M+16,y+3.8,{align:'center'});
-      doc.setFont('times','italic'); doc.setFontSize(8); doc.setTextColor(80,62,28);
-      doc.text(e.date,W-M,y+4,{align:'right'});
-      y+=8;
-      doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(232,201,106);
-      const titleWrapped=doc.splitTextToSize(e.title,CW);
-      titleWrapped.forEach(l=>{checkPage(7);doc.text(l,M,y);y+=6.5;});
-      y+=1;
-      y=pdfRenderMD(doc,e.body||'',M+2,y,CW-4,checkPage);
-      y+=5;
-      if(ei<journal.length-1){
-        checkPage(6);
-        doc.setDrawColor(42,26,8); doc.setLineWidth(0.1);
-        doc.line(M+12,y-2,W-M-12,y-2); y+=5;
+      checkPage(36);
+
+      // Tag pill (dark filled, white text)
+      const tc = tagColors[e.tag]||tagColors.other;
+      doc.setFillColor(...tc);
+      doc.roundedRect(M, y, 34, 5.5, 1, 1, 'F');
+      doc.setFont('times','bold'); doc.setFontSize(6); doc.setTextColor(255,252,245);
+      doc.text(tagLabel[e.tag].toUpperCase(), M+17, y+3.8, {align:'center'});
+      // Date right-aligned
+      doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(90,70,45);
+      doc.text(e.date, W-M, y+4, {align:'right'});
+      y += 8;
+
+      // Entry title
+      checkPage(10);
+      doc.setFont('times','bold'); doc.setFontSize(14); doc.setTextColor(20,12,5);
+      const titleLines = doc.splitTextToSize(e.title, CW);
+      titleLines.forEach(l=>{ checkPage(8); doc.text(l, M, y); y+=7; });
+      // thin rule under title
+      doc.setDrawColor(140,110,70); doc.setLineWidth(0.15);
+      doc.line(M, y, M+CW, y); y+=4;
+
+      // Body
+      y = pdfRenderMD(doc, e.body||'', M, y, CW, checkPage);
+      y += 4;
+
+      // Entry divider
+      if(ei < journal.length-1){
+        checkPage(10);
+        doc.setDrawColor(140,110,70); doc.setLineWidth(0.2);
+        doc.line(M+15, y, W-M-15, y); y+=8;
       }
     });
   }
@@ -1854,7 +1763,8 @@ async function exportPDF(){
   bar.style.width='100%';
   setTimeout(()=>{progress.style.display='none';bar.style.width='0';},900);
   toast('✦ PDF exported');
-}
+}  
+
   // ── Google Drive ──
 let driveTokenClient = null;
 let driveTokenExpiry = 0;
