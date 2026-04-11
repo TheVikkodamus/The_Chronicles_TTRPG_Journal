@@ -1272,28 +1272,124 @@ function addEntry(){
   document.getElementById('j-title').value='';document.getElementById('j-body').value='';
   toast('✦ Entry written to the Chronicles');
 }
+// =====================================================================
+// JOURNAL EDIT FEATURE  —  three find-and-replace blocks
+// =====================================================================
+// Apply each block in order. The marker comments show exactly what to
+// find and what to replace it with.
+// =====================================================================
+
 function deleteEntry(id){journal=journal.filter(e=>e.id!==id);renderJournal();}
-function filterEntries(btn,filter){
-  journalFilter=filter;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); renderJournal();
+ 
+function toggleJournalEdit(id){
+  const e=journal.find(e=>e.id===id);
+  if(!e) return;
+  e.editing=!e.editing;
+  renderJournal();
 }
+ 
+function saveJournalEdit(id){
+  const e=journal.find(e=>e.id===id);
+  if(!e) return;
+  const title=document.getElementById(`je-title-${id}`).value.trim();
+  const body =document.getElementById(`je-body-${id}`).value.trim();
+  if(!title||!body){toast('⚠ Title and entry are required',true);return;}
+  e.title=title;
+  e.body=body;
+  e.tag=document.getElementById(`je-tag-${id}`).value;
+  e.editing=false;
+  renderJournal();
+  toast('✦ Entry updated');
+}
+ 
+function switchJournalEditTab(id, tab){
+  const textarea=document.getElementById(`je-body-${id}`);
+  const preview =document.getElementById(`je-preview-${id}`);
+  const btnW    =document.getElementById(`je-tab-write-${id}`);
+  const btnP    =document.getElementById(`je-tab-preview-${id}`);
+  if(tab==='preview'){
+    preview.innerHTML=marked.parse(textarea.value||'*Nothing to preview yet.*');
+    preview.style.display='block';
+    textarea.style.display='none';
+    btnP.classList.add('active'); btnW.classList.remove('active');
+  } else {
+    preview.style.display='none';
+    textarea.style.display='block';
+    btnW.classList.add('active'); btnP.classList.remove('active');
+  }
+}
+// ─────────────────────────────────────────────────────────────────────
+// BLOCK 2 — replace the entire renderJournal function
+//           (find: "function renderJournal(){" … closing "}")
+// ─────────────────────────────────────────────────────────────────────
+ 
 function renderJournal(){
   const el=document.getElementById('journal-list');
   const entries=journalFilter==='all'?journal:journal.filter(e=>e.tag===journalFilter);
-  if(!entries.length){el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📜</div><p>${journal.length?'No entries match this filter.':'The Chronicles awaits your first entry.'}</p></div>`;return;}
-  el.innerHTML=entries.map(e=>`<div class="journal-entry">
-    <div class="entry-header">
-      <div><span class="entry-tag tag-${e.tag}">${tagLabel[e.tag]}</span><div class="entry-title" style="margin-top:.3rem">${e.title}</div></div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
-        <span class="entry-meta">${e.date}</span>
-        <button class="btn btn-danger" onclick="deleteEntry(${e.id})">✕</button>
+  if(!entries.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📜</div><p>${journal.length?'No entries match this filter.':'The Chronicles awaits your first entry.'}</p></div>`;
+    return;
+  }
+  el.innerHTML=entries.map(e=>{
+ 
+    // ── EDIT MODE ──
+    if(e.editing){
+      return `<div class="journal-entry" style="border-left-color:var(--gold);background:var(--panel-light);">
+        <div class="entry-header" style="margin-bottom:.8rem">
+          <div style="flex:1">
+            <div style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.4rem">Editing Entry</div>
+            <input id="je-title-${e.id}" type="text" value="${e.title.replace(/"/g,'&quot;')}"
+              style="font-family:'Cinzel',serif;font-size:1rem;font-weight:600;width:100%;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--gold-light);padding:.45rem .7rem;outline:none;border-radius:2px;"/>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0">
+            <span class="entry-meta">${e.date}</span>
+            <select id="je-tag-${e.id}" style="font-family:'Cinzel',serif;font-size:.6rem;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);padding:.35rem .5rem;outline:none;border-radius:2px;">
+              <option value="session" ${e.tag==='session'?'selected':''}>Session Log</option>
+              <option value="lore"    ${e.tag==='lore'   ?'selected':''}>World Lore</option>
+              <option value="quest"   ${e.tag==='quest'  ?'selected':''}>Quest / Hook</option>
+              <option value="npc"     ${e.tag==='npc'    ?'selected':''}>NPC Notes</option>
+              <option value="other"   ${e.tag==='other'  ?'selected':''}>Other</option>
+            </select>
+          </div>
+        </div>
+ 
+        <div>
+          <div class="tab-toggle" style="margin-bottom:.5rem">
+            <button id="je-tab-write-${e.id}"   class="active" onclick="switchJournalEditTab(${e.id},'write')">✎ Write</button>
+            <button id="je-tab-preview-${e.id}"           onclick="switchJournalEditTab(${e.id},'preview')">👁 Preview</button>
+          </div>
+          <textarea id="je-body-${e.id}" style="width:100%;min-height:140px;resize:vertical;background:rgba(10,6,2,.8);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--parchment);font-family:'IM Fell English',serif;font-size:.97rem;line-height:1.75;padding:.6rem .8rem;outline:none;border-radius:2px;">${e.body.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+          <div class="md-preview-wrap" id="je-preview-${e.id}"></div>
+        </div>
+ 
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem">
+          <button class="btn btn-primary" onclick="saveJournalEdit(${e.id})">✦ Save Changes</button>
+          <button class="btn btn-ghost"   onclick="toggleJournalEdit(${e.id})">Cancel</button>
+          <button class="btn btn-danger"  onclick="deleteEntry(${e.id})" style="margin-left:auto">✕ Delete</button>
+        </div>
+      </div>`;
+    }
+ 
+    // ── VIEW MODE ──
+    return `<div class="journal-entry">
+      <div class="entry-header">
+        <div>
+          <span class="entry-tag tag-${e.tag}">${tagLabel[e.tag]}</span>
+          <div class="entry-title" style="margin-top:.3rem">${e.title}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
+          <span class="entry-meta">${e.date}</span>
+          <div style="display:flex;gap:.3rem">
+            <button class="btn btn-ghost" onclick="toggleJournalEdit(${e.id})" style="font-size:.6rem;padding:.3rem .7rem">✎ Edit</button>
+            <button class="btn btn-danger" onclick="deleteEntry(${e.id})">✕</button>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="entry-body">${marked.parse(e.body||'')}</div>
-  </div>`).join('');
+      <div class="entry-body">${marked.parse(e.body||'')}</div>
+    </div>`;
+ 
+  }).join('');
 }
-
 // ── Journal preview ──
 function switchJournalTab(tab){
   const textarea = document.getElementById('j-body');
