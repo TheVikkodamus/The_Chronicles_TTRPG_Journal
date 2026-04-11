@@ -1517,6 +1517,219 @@ function pdfRenderMD(doc, mdText, x, y, maxW, checkPage){
   return y;
 }
 
+// ── PDF Markdown Helpers ──
+
+// Strip inline markdown to plain text
+function pdfStripInline(text){
+  return text
+    .replace(/\*\*(.*?)\*\*/g,'$1')
+    .replace(/\*(.*?)\*/g,'$1')
+    .replace(/~~(.*?)~~/g,'$1')
+    .replace(/`(.*?)`/g,'$1');
+}
+
+// Render inline text with bold/italic/code segments, word-wrapping within maxW
+function pdfRenderInline(doc, text, x, y, maxW, checkPage, baseSize){
+  baseSize = baseSize || 9.5;
+  var tokens=[];
+  var re=/(\*\*([\s\S]+?)\*\*|\*([\s\S]+?)\*|`([\s\S]+?)`)/g;
+  var last=0, m;
+  while((m=re.exec(text))!==null){
+    if(m.index>last) tokens.push({t:'n',s:text.slice(last,m.index)});
+    if(m[0].startsWith('**'))      tokens.push({t:'b',s:m[2]});
+    else if(m[0].startsWith('*'))  tokens.push({t:'i',s:m[3]});
+    else                           tokens.push({t:'c',s:m[4]});
+    last=m.index+m[0].length;
+  }
+  if(last<text.length) tokens.push({t:'n',s:text.slice(last)});
+
+  var lineH=baseSize*0.55;
+  var cx=x;
+
+  for(var ti=0;ti<tokens.length;ti++){
+    var tok=tokens[ti];
+    if(tok.t==='b'){      doc.setFont('times','bold');     doc.setFontSize(baseSize); doc.setTextColor(235,220,185); }
+    else if(tok.t==='i'){ doc.setFont('times','italic');   doc.setFontSize(baseSize); doc.setTextColor(210,190,148); }
+    else if(tok.t==='c'){ doc.setFont('courier','normal'); doc.setFontSize(baseSize-1); doc.setTextColor(195,178,120); }
+    else {                doc.setFont('times','italic');   doc.setFontSize(baseSize); doc.setTextColor(195,178,132); }
+
+    var words = tok.s.split(' ');
+    for(var wi=0;wi<words.length;wi++){
+      var word = words[wi] + (wi<words.length-1?' ':'');
+      if(!word) continue;
+      var ww=doc.getTextWidth(word);
+      if(cx+ww > x+maxW && cx>x){
+        y+=lineH; checkPage(lineH+1); cx=x;
+      }
+      doc.text(word,cx,y);
+      cx+=ww;
+    }
+  }
+  return y+lineH;
+}
+
+// Render a parsed markdown table into the PDF
+function pdfRenderTable(doc, headers, dataRows, x, y, maxW, checkPage){
+  if(!headers.length) return y;
+  const cols  = headers.length;
+  const colW  = maxW / cols;
+  const headH = 7.5;
+  const rowH  = 6.5;
+
+  checkPage(headH + dataRows.length * rowH + 6);
+
+  // ── Header row ──
+  doc.setFillColor(35,22,8);
+  doc.rect(x, y, maxW, headH, 'F');
+  doc.setDrawColor(140,108,40); doc.setLineWidth(0.25);
+  doc.rect(x, y, maxW, headH, 'S');
+
+  doc.setFont('times','bold'); doc.setFontSize(8); doc.setTextColor(200,168,75);
+  headers.forEach((h, ci) => {
+    const cx = x + ci * colW;
+    if(ci > 0){
+      doc.setDrawColor(80,55,15); doc.setLineWidth(0.15);
+      doc.line(cx, y, cx, y + headH);
+    }
+    doc.text(pdfStripInline(h).toUpperCase(), cx + 2, y + 5, { maxWidth: colW - 4 });
+  });
+  y += headH;
+
+  // ── Data rows ──
+  dataRows.forEach((row, ri) => {
+    checkPage(rowH + 2);
+    if(ri % 2 === 0){
+      doc.setFillColor(20,13,5);
+      doc.rect(x, y, maxW, rowH, 'F');
+    }
+    doc.setDrawColor(50,34,12); doc.setLineWidth(0.1);
+    doc.rect(x, y, maxW, rowH, 'S');
+
+    doc.setFont('times','italic'); doc.setFontSize(8.5); doc.setTextColor(195,178,132);
+    row.forEach((cell, ci) => {
+      if(ci >= cols) return;
+      const cx = x + ci * colW;
+      if(ci > 0){
+        doc.setDrawColor(50,34,12); doc.setLineWidth(0.1);
+        doc.line(cx, y, cx, y + rowH);
+      }
+      doc.text(pdfStripInline(cell), cx + 2, y + 4.5, { maxWidth: colW - 4 });
+    });
+    y += rowH;
+  });
+
+  // bottom rule
+  doc.setDrawColor(100,75,25); doc.setLineWidth(0.2);
+  doc.line(x, y, x + maxW, y);
+  return y + 4;
+}
+
+// Full block-level markdown renderer for jsPDF
+function pdfRenderMD(doc, mdText, x, y, maxW, checkPage){
+  var lines=(mdText||'').split('\n');
+
+  function parseRow(line){
+    return line.split('|').slice(1,-1).map(function(c){return c.trim();});
+  }
+  function isSepRow(line){
+    return /^\|[\s|:-]+\|/.test(line);
+  }
+
+  for(var i=0;i<lines.length;i++){
+    var raw=lines[i];
+
+    // Blank line
+    if(!raw.trim()){ y+=2.5; continue; }
+
+    // ── Table block — collect all consecutive | lines ──
+    if(/^\|/.test(raw)){
+      var tableLines=[];
+      while(i<lines.length && /^\|/.test(lines[i])){
+        tableLines.push(lines[i]);
+        i++;
+      }
+      i--; // for-loop will increment
+
+      var headers=[], dataRows=[];
+      tableLines.forEach(function(tl,ti){
+        if(ti===0)             headers  = parseRow(tl);
+        else if(!isSepRow(tl)) dataRows.push(parseRow(tl));
+      });
+      y = pdfRenderTable(doc, headers, dataRows, x, y, maxW, checkPage);
+      continue;
+    }
+
+    // H1
+    if(/^# /.test(raw)){
+      checkPage(10);
+      doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(232,201,106);
+      var wrapped=doc.splitTextToSize(raw.slice(2),maxW);
+      for(var j=0;j<wrapped.length;j++){checkPage(7);doc.text(wrapped[j],x,y);y+=6.5;}
+      doc.setDrawColor(120,90,25); doc.setLineWidth(0.2); doc.line(x,y-1,x+maxW*0.6,y-1);
+      y+=2; continue;
+    }
+    // H2
+    if(/^## /.test(raw)){
+      checkPage(9);
+      doc.setFont('times','bold'); doc.setFontSize(11); doc.setTextColor(200,168,75);
+      var wrapped=doc.splitTextToSize(raw.slice(3),maxW);
+      for(var j=0;j<wrapped.length;j++){checkPage(6);doc.text(wrapped[j],x,y);y+=5.5;}
+      y+=1; continue;
+    }
+    // H3
+    if(/^### /.test(raw)){
+      checkPage(8);
+      doc.setFont('times','bolditalic'); doc.setFontSize(10); doc.setTextColor(175,148,65);
+      var wrapped=doc.splitTextToSize(raw.slice(4),maxW);
+      for(var j=0;j<wrapped.length;j++){checkPage(5.5);doc.text(wrapped[j],x,y);y+=5;}
+      y+=1; continue;
+    }
+    // HR
+    if(/^[-*_]{3,}\s*$/.test(raw.trim())){
+      checkPage(5);
+      doc.setDrawColor(70,50,15); doc.setLineWidth(0.25);
+      doc.line(x,y-1.5,x+maxW,y-1.5); y+=4; continue;
+    }
+    // Blockquote
+    if(/^> /.test(raw)){
+      checkPage(6);
+      var content=pdfStripInline(raw.slice(2));
+      var wrapped=doc.splitTextToSize(content,maxW-7);
+      var bqH=wrapped.length*4.8+2;
+      doc.setFillColor(22,14,5); doc.rect(x,y-3.5,2,bqH,'F');
+      doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(150,128,78);
+      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+5,y);y+=4.8;}
+      y+=2; continue;
+    }
+    // Unordered list
+    if(/^[-*+] /.test(raw)){
+      checkPage(5);
+      var item=pdfStripInline(raw.slice(2));
+      var wrapped=doc.splitTextToSize(item,maxW-7);
+      doc.setFont('times','normal'); doc.setFontSize(9.5); doc.setTextColor(185,165,115);
+      doc.text('\u00b7',x+2,y);
+      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+6,y);if(j<wrapped.length-1)y+=4.8;}
+      y+=5.2; continue;
+    }
+    // Ordered list
+    var olM=raw.match(/^(\d+)\. (.+)/);
+    if(olM){
+      checkPage(5);
+      var item=pdfStripInline(olM[2]);
+      var wrapped=doc.splitTextToSize(item,maxW-8);
+      doc.setFont('times','normal'); doc.setFontSize(9.5); doc.setTextColor(185,165,115);
+      doc.text(olM[1]+'.',x+1.5,y);
+      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+7,y);if(j<wrapped.length-1)y+=4.8;}
+      y+=5.2; continue;
+    }
+    // Normal paragraph with inline formatting
+    checkPage(6);
+    y=pdfRenderInline(doc,raw,x,y,maxW,checkPage,9.5);
+    y+=0.8;
+  }
+  return y;
+}
+
 // ── PDF Export ──
 async function exportPDF(){
   if(!characters.length&&!journal.length){toast('⚠ Nothing to export yet!',true);return;}
@@ -1548,21 +1761,18 @@ async function exportPDF(){
 
     characters.forEach((c,ci)=>{
       checkPage(60);
-      // Character header bar
       doc.setFillColor(35,22,8); doc.rect(M,y,CW,14,'F');
       doc.setDrawColor(140,108,40); doc.setLineWidth(0.25); doc.rect(M,y,CW,14,'S');
       doc.setFont('times','bold'); doc.setFontSize(14); doc.setTextColor(232,201,106);
       doc.text(c.name,M+4,y+9);
       doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(120,96,38);
       doc.text(`Lvl ${c.level}  ·  ${c.race}  ·  ${c.cls}`,M+4,y+13);
-      // HP with colour coding
       const hpPct=c.maxhp>0?c.hp/c.maxhp:0;
       const hpCol=hpPct>0.5?[60,160,60]:hpPct>0.25?[200,140,40]:[180,50,50];
       doc.setFont('times','bold'); doc.setFontSize(9); doc.setTextColor(...hpCol);
       doc.text(`HP  ${c.hp} / ${c.maxhp}`,W-M-3,y+9,{align:'right'});
       y+=18;
 
-      // Ability score boxes
       const stats=c.stats||[];
       if(stats.length){
         const cols=Math.min(8,stats.length);
@@ -1583,7 +1793,6 @@ async function exportPDF(){
         y+=23;
       }
 
-      // HP bar strip
       const barW=CW-2;
       const hpFill=Math.max(0,Math.min(1,c.hp/c.maxhp));
       doc.setFillColor(20,12,5); doc.rect(M+1,y,barW,3,'F');
@@ -1592,7 +1801,6 @@ async function exportPDF(){
       doc.setDrawColor(50,34,12); doc.setLineWidth(0.1); doc.rect(M+1,y,barW,3,'S');
       y+=7;
 
-      // Notes — full markdown rendering
       if(c.notes){
         checkPage(12);
         y=pdfRenderMD(doc,c.notes,M+3,y,CW-7,checkPage);
@@ -1626,12 +1834,10 @@ async function exportPDF(){
       doc.setFont('times','italic'); doc.setFontSize(8); doc.setTextColor(80,62,28);
       doc.text(e.date,W-M,y+4,{align:'right'});
       y+=8;
-      // Entry title
       doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(232,201,106);
       const titleWrapped=doc.splitTextToSize(e.title,CW);
       titleWrapped.forEach(l=>{checkPage(7);doc.text(l,M,y);y+=6.5;});
       y+=1;
-      // Body — full markdown rendering
       y=pdfRenderMD(doc,e.body||'',M+2,y,CW-4,checkPage);
       y+=5;
       if(ei<journal.length-1){
@@ -1649,7 +1855,7 @@ async function exportPDF(){
   setTimeout(()=>{progress.style.display='none';bar.style.width='0';},900);
   toast('✦ PDF exported');
 }
-// ── Google Drive ──
+  // ── Google Drive ──
 let driveTokenClient = null;
 let driveTokenExpiry = 0;
 
