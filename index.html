@@ -1386,11 +1386,142 @@ function restoreJSON(e){
   reader.readAsText(file); e.target.value='';
 }
 
+// ── PDF Markdown Helpers ──
+
+// Strip inline markdown to plain text
+function pdfStripInline(text){
+  return text
+    .replace(/\*\*(.*?)\*\*/g,'$1')
+    .replace(/\*(.*?)\*/g,'$1')
+    .replace(/~~(.*?)~~/g,'$1')
+    .replace(/`(.*?)`/g,'$1');
+}
+
+// Render inline text with bold/italic/code segments, word-wrapping within maxW
+function pdfRenderInline(doc, text, x, y, maxW, checkPage, baseSize){
+  baseSize = baseSize || 9.5;
+  var tokens=[];
+  var re=/(\*\*([\s\S]+?)\*\*|\*([\s\S]+?)\*|`([\s\S]+?)`)/g;
+  var last=0, m;
+  while((m=re.exec(text))!==null){
+    if(m.index>last) tokens.push({t:'n',s:text.slice(last,m.index)});
+    if(m[0].startsWith('**'))      tokens.push({t:'b',s:m[2]});
+    else if(m[0].startsWith('*'))  tokens.push({t:'i',s:m[3]});
+    else                           tokens.push({t:'c',s:m[4]});
+    last=m.index+m[0].length;
+  }
+  if(last<text.length) tokens.push({t:'n',s:text.slice(last)});
+
+  var lineH=baseSize*0.55;
+  var cx=x;
+
+  for(var ti=0;ti<tokens.length;ti++){
+    var tok=tokens[ti];
+    if(tok.t==='b'){      doc.setFont('times','bold');     doc.setFontSize(baseSize); doc.setTextColor(235,220,185); }
+    else if(tok.t==='i'){ doc.setFont('times','italic');   doc.setFontSize(baseSize); doc.setTextColor(210,190,148); }
+    else if(tok.t==='c'){ doc.setFont('courier','normal'); doc.setFontSize(baseSize-1); doc.setTextColor(195,178,120); }
+    else {                doc.setFont('times','italic');   doc.setFontSize(baseSize); doc.setTextColor(195,178,132); }
+
+    var words = tok.s.split(' ');
+    for(var wi=0;wi<words.length;wi++){
+      var word = words[wi] + (wi<words.length-1?' ':'');
+      if(!word) continue;
+      var ww=doc.getTextWidth(word);
+      if(cx+ww > x+maxW && cx>x){
+        y+=lineH; checkPage(lineH+1); cx=x;
+      }
+      doc.text(word,cx,y);
+      cx+=ww;
+    }
+  }
+  return y+lineH;
+}
+
+// Full block-level markdown renderer for jsPDF
+function pdfRenderMD(doc, mdText, x, y, maxW, checkPage){
+  var lines=(mdText||'').split('\n');
+  for(var i=0;i<lines.length;i++){
+    var raw=lines[i];
+
+    // Blank line
+    if(!raw.trim()){ y+=2.5; continue; }
+
+    // H1
+    if(/^# /.test(raw)){
+      checkPage(10);
+      doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(232,201,106);
+      var wrapped=doc.splitTextToSize(raw.slice(2),maxW);
+      for(var j=0;j<wrapped.length;j++){checkPage(7);doc.text(wrapped[j],x,y);y+=6.5;}
+      doc.setDrawColor(120,90,25); doc.setLineWidth(0.2); doc.line(x,y-1,x+maxW*0.6,y-1);
+      y+=2; continue;
+    }
+    // H2
+    if(/^## /.test(raw)){
+      checkPage(9);
+      doc.setFont('times','bold'); doc.setFontSize(11); doc.setTextColor(200,168,75);
+      var wrapped=doc.splitTextToSize(raw.slice(3),maxW);
+      for(var j=0;j<wrapped.length;j++){checkPage(6);doc.text(wrapped[j],x,y);y+=5.5;}
+      y+=1; continue;
+    }
+    // H3
+    if(/^### /.test(raw)){
+      checkPage(8);
+      doc.setFont('times','bolditalic'); doc.setFontSize(10); doc.setTextColor(175,148,65);
+      var wrapped=doc.splitTextToSize(raw.slice(4),maxW);
+      for(var j=0;j<wrapped.length;j++){checkPage(5.5);doc.text(wrapped[j],x,y);y+=5;}
+      y+=1; continue;
+    }
+    // HR
+    if(/^[-*_]{3,}\s*$/.test(raw.trim())){
+      checkPage(5);
+      doc.setDrawColor(70,50,15); doc.setLineWidth(0.25);
+      doc.line(x,y-1.5,x+maxW,y-1.5); y+=4; continue;
+    }
+    // Blockquote
+    if(/^> /.test(raw)){
+      checkPage(6);
+      var content=pdfStripInline(raw.slice(2));
+      var wrapped=doc.splitTextToSize(content,maxW-7);
+      var bqH=wrapped.length*4.8+2;
+      doc.setFillColor(22,14,5); doc.rect(x,y-3.5,2,bqH,'F');
+      doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(150,128,78);
+      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+5,y);y+=4.8;}
+      y+=2; continue;
+    }
+    // Unordered list
+    if(/^[-*+] /.test(raw)){
+      checkPage(5);
+      var item=pdfStripInline(raw.slice(2));
+      var wrapped=doc.splitTextToSize(item,maxW-7);
+      doc.setFont('times','normal'); doc.setFontSize(9.5); doc.setTextColor(185,165,115);
+      doc.text('\u00b7',x+2,y);
+      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+6,y);if(j<wrapped.length-1)y+=4.8;}
+      y+=5.2; continue;
+    }
+    // Ordered list
+    var olM=raw.match(/^(\d+)\. (.+)/);
+    if(olM){
+      checkPage(5);
+      var item=pdfStripInline(olM[2]);
+      var wrapped=doc.splitTextToSize(item,maxW-8);
+      doc.setFont('times','normal'); doc.setFontSize(9.5); doc.setTextColor(185,165,115);
+      doc.text(olM[1]+'.',x+1.5,y);
+      for(var j=0;j<wrapped.length;j++){checkPage(5);doc.text(wrapped[j],x+7,y);if(j<wrapped.length-1)y+=4.8;}
+      y+=5.2; continue;
+    }
+    // Normal paragraph with inline formatting
+    checkPage(6);
+    y=pdfRenderInline(doc,raw,x,y,maxW,checkPage,9.5);
+    y+=0.8;
+  }
+  return y;
+}
+
 // ── PDF Export ──
 async function exportPDF(){
   if(!characters.length&&!journal.length){toast('⚠ Nothing to export yet!',true);return;}
   const progress=document.getElementById('pdf-progress'), bar=document.getElementById('pdf-bar');
-  progress.style.display='block'; bar.style.width='10%';
+  progress.style.display='block'; bar.style.width='8%';
   await new Promise(r=>setTimeout(r,50));
 
   const{jsPDF}=window.jspdf;
@@ -1407,75 +1538,80 @@ async function exportPDF(){
     if(y+need>272){doc.addPage();y=M;drawBg();}
   }
 
-  // Title page
-  drawBg(); y=72;
-  doc.setFont('times','bolditalic'); doc.setFontSize(34); doc.setTextColor(232,201,106);
-  doc.text('The Chronicles',W/2,y,{align:'center'}); y+=12;
-  doc.setFont('times','italic'); doc.setFontSize(12); doc.setTextColor(120,96,38);
-  doc.text('A Tome for Heroes & Their Tales',W/2,y,{align:'center'}); y+=20;
-  doc.setDrawColor(200,168,75); doc.setLineWidth(0.4);
-  doc.line(M+15,y,W-M-15,y); y+=12;
-  doc.setFont('times','normal'); doc.setFontSize(11); doc.setTextColor(180,160,100);
-  doc.text(`${characters.length} Character${characters.length!==1?'s':''} · ${journal.length} Journal Entr${journal.length!==1?'ies':'y'}`,W/2,y,{align:'center'}); y+=8;
-  doc.setFontSize(9); doc.setTextColor(80,62,28);
-  doc.text(`Exported ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`,W/2,y,{align:'center'});
-  bar.style.width='25%';
-
-  // Characters section
+  // ── Characters (starts on page 1, no title page) ──
   if(characters.length){
-    doc.addPage(); drawBg(); y=M;
+    drawBg(); y=M;
     doc.setFont('times','bold'); doc.setFontSize(20); doc.setTextColor(232,201,106);
     doc.text('Characters',W/2,y+7,{align:'center'}); y+=14;
     doc.setDrawColor(200,168,75); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=8;
+    bar.style.width='20%';
 
     characters.forEach((c,ci)=>{
       checkPage(60);
-      // header block
-      doc.setFillColor(35,22,8); doc.rect(M,y,CW,13,'F');
+      // Character header bar
+      doc.setFillColor(35,22,8); doc.rect(M,y,CW,14,'F');
+      doc.setDrawColor(140,108,40); doc.setLineWidth(0.25); doc.rect(M,y,CW,14,'S');
       doc.setFont('times','bold'); doc.setFontSize(14); doc.setTextColor(232,201,106);
-      doc.text(c.name,M+4,y+8.5);
+      doc.text(c.name,M+4,y+9);
       doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(120,96,38);
-      doc.text(`Lvl ${c.level} ${c.race} ${c.cls}`,M+4,y+12.5);
-      doc.setFont('times','bold'); doc.setFontSize(9); doc.setTextColor(200,168,75);
-      doc.text(`HP ${c.hp}/${c.maxhp}`,W-M-3,y+10,{align:'right'});
-      y+=16;
+      doc.text(`Lvl ${c.level}  ·  ${c.race}  ·  ${c.cls}`,M+4,y+13);
+      // HP with colour coding
+      const hpPct=c.maxhp>0?c.hp/c.maxhp:0;
+      const hpCol=hpPct>0.5?[60,160,60]:hpPct>0.25?[200,140,40]:[180,50,50];
+      doc.setFont('times','bold'); doc.setFontSize(9); doc.setTextColor(...hpCol);
+      doc.text(`HP  ${c.hp} / ${c.maxhp}`,W-M-3,y+9,{align:'right'});
+      y+=18;
 
-      // ability scores
+      // Ability score boxes
       const stats=c.stats||[];
       if(stats.length){
         const cols=Math.min(8,stats.length);
         const bw=CW/cols;
-        stats.slice(0,cols).forEach((s,i)=>{
-          const bx=M+i*bw;
-          doc.setFillColor(18,11,4); doc.rect(bx,y,bw-0.8,18,'F');
-          doc.setDrawColor(55,38,14); doc.setLineWidth(0.2); doc.rect(bx,y,bw-0.8,18,'S');
+        stats.slice(0,cols).forEach((s,idx)=>{
+          const bx=M+idx*bw;
+          doc.setFillColor(18,11,4); doc.rect(bx,y,bw-0.8,19,'F');
+          doc.setDrawColor(55,38,14); doc.setLineWidth(0.2); doc.rect(bx,y,bw-0.8,19,'S');
           doc.setFont('times','bold'); doc.setFontSize(6); doc.setTextColor(110,86,30);
-          doc.text((s.name||'').toUpperCase().slice(0,6),bx+bw/2-0.5,y+5,{align:'center'});
+          doc.text((s.name||'').toUpperCase().slice(0,6),bx+bw/2-0.4,y+5,{align:'center'});
           doc.setFont('times','bold'); doc.setFontSize(12); doc.setTextColor(245,237,216);
-          doc.text(s.val!==''?String(s.val):'—',bx+bw/2-0.5,y+12,{align:'center'});
+          doc.text(s.val!==''?String(s.val):'—',bx+bw/2-0.4,y+13,{align:'center'});
           if(s.mod!==''){
             doc.setFont('times','italic'); doc.setFontSize(7); doc.setTextColor(200,168,75);
-            doc.text(String(s.mod),bx+bw/2-0.5,y+16.5,{align:'center'});
+            doc.text(String(s.mod),bx+bw/2-0.4,y+17.5,{align:'center'});
           }
         });
-        y+=22;
+        y+=23;
       }
 
-      // notes
+      // HP bar strip
+      const barW=CW-2;
+      const hpFill=Math.max(0,Math.min(1,c.hp/c.maxhp));
+      doc.setFillColor(20,12,5); doc.rect(M+1,y,barW,3,'F');
+      const fc=hpFill>0.5?[50,140,50]:hpFill>0.25?[180,120,30]:[160,40,40];
+      doc.setFillColor(...fc); doc.rect(M+1,y,barW*hpFill,3,'F');
+      doc.setDrawColor(50,34,12); doc.setLineWidth(0.1); doc.rect(M+1,y,barW,3,'S');
+      y+=7;
+
+      // Notes — full markdown rendering
       if(c.notes){
-        checkPage(16);
-        doc.setFont('times','italic'); doc.setFontSize(9); doc.setTextColor(160,136,88);
-        doc.splitTextToSize(c.notes,CW-6).forEach(line=>{checkPage(5);doc.text(line,M+3,y);y+=4.5;});
+        checkPage(12);
+        y=pdfRenderMD(doc,c.notes,M+3,y,CW-7,checkPage);
         y+=3;
       }
-      if(ci<characters.length-1){checkPage(6);doc.setDrawColor(50,34,12);doc.setLineWidth(0.1);doc.line(M+10,y,W-M-10,y);y+=8;}
-    });
-  }
-  bar.style.width='60%';
 
-  // Journal section
+      if(ci<characters.length-1){
+        checkPage(8);
+        doc.setDrawColor(50,34,12); doc.setLineWidth(0.15);
+        doc.line(M+12,y+1,W-M-12,y+1); y+=9;
+      }
+    });
+    bar.style.width='60%';
+  }
+
+  // ── Journal ──
   if(journal.length){
-    doc.addPage(); drawBg(); y=M;
+    if(characters.length){ doc.addPage(); drawBg(); y=M; }
+    else { drawBg(); y=M; }
     doc.setFont('times','bold'); doc.setFontSize(20); doc.setTextColor(232,201,106);
     doc.text('Journal',W/2,y+7,{align:'center'}); y+=14;
     doc.setDrawColor(200,168,75); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=8;
@@ -1483,29 +1619,36 @@ async function exportPDF(){
     const tc={session:[85,115,55],lore:[55,85,115],quest:[115,85,40],npc:[100,55,100],other:[60,60,60]};
     journal.forEach((e,ei)=>{
       checkPage(32);
-      const c=tc[e.tag]||tc.other;
-      doc.setFillColor(...c); doc.roundedRect(M,y,30,5.5,1,1,'F');
+      const col=tc[e.tag]||tc.other;
+      doc.setFillColor(...col); doc.roundedRect(M,y,32,5.5,1,1,'F');
       doc.setFont('times','bold'); doc.setFontSize(6); doc.setTextColor(245,237,216);
-      doc.text(tagLabel[e.tag].toUpperCase(),M+15,y+3.8,{align:'center'});
-      doc.setFontSize(8); doc.setTextColor(80,62,28);
+      doc.text(tagLabel[e.tag].toUpperCase(),M+16,y+3.8,{align:'center'});
+      doc.setFont('times','italic'); doc.setFontSize(8); doc.setTextColor(80,62,28);
       doc.text(e.date,W-M,y+4,{align:'right'});
       y+=8;
+      // Entry title
       doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(232,201,106);
-      doc.text(e.title,M,y); y+=7;
-      doc.setFont('times','italic'); doc.setFontSize(9.5); doc.setTextColor(195,178,132);
-      doc.splitTextToSize(e.body,CW-4).forEach(line=>{checkPage(5);doc.text(line,M+2,y);y+=4.8;});
+      const titleWrapped=doc.splitTextToSize(e.title,CW);
+      titleWrapped.forEach(l=>{checkPage(7);doc.text(l,M,y);y+=6.5;});
+      y+=1;
+      // Body — full markdown rendering
+      y=pdfRenderMD(doc,e.body||'',M+2,y,CW-4,checkPage);
       y+=5;
-      if(ei<journal.length-1){checkPage(5);doc.setDrawColor(42,26,8);doc.setLineWidth(0.1);doc.line(M+12,y-2,W-M-12,y-2);y+=5;}
+      if(ei<journal.length-1){
+        checkPage(6);
+        doc.setDrawColor(42,26,8); doc.setLineWidth(0.1);
+        doc.line(M+12,y-2,W-M-12,y-2); y+=5;
+      }
     });
   }
+
   bar.style.width='95%';
   await new Promise(r=>setTimeout(r,100));
-  doc.save(`Chronicless-${new Date().toISOString().slice(0,10)}.pdf`);
+  doc.save(`Chronicles-${new Date().toISOString().slice(0,10)}.pdf`);
   bar.style.width='100%';
   setTimeout(()=>{progress.style.display='none';bar.style.width='0';},900);
   toast('✦ PDF exported');
 }
-
 // ── Google Drive ──
 let driveTokenClient = null;
 let driveTokenExpiry = 0;
