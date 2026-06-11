@@ -1584,7 +1584,7 @@ async function exportPDF(){
       doc.setDrawColor(140,110,70);doc.setLineWidth(0.1);doc.rect(M,y,barW,2.5,'S');
       y+=6;
       if(c.notes){y=checkPage(y,14);y=pdfRenderMD(doc,c.notes,M,y,CW,checkPage);y+=2;}
-      if(ci<characters.length-1){y=checkPage(y,12);doc.setDrawColor(140,110,70);doc.setLineWidth(0.2);doc.line(M+10,y+2,W-M-10,y+2);y+=10;}
+     if(ci<characters.length-1){doc.addPage();drawPageFrame();y=M;}
     });
     bar.style.width='60%';
   }
