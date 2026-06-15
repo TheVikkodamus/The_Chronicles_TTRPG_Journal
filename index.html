@@ -1398,6 +1398,44 @@ function toggleAllJsonChars(state) {
 }
 
 // ════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// DOWNLOAD HELPER — uses base64 data URI to avoid
+// blob URL permission blocks in sandboxed contexts
+// ════════════════════════════════════════════════════
+function triggerDownload(filename, mimeType, dataOrBytes) {
+  try {
+    // Primary: blob URL (works in normal browser tabs)
+    const blob = new Blob([dataOrBytes], { type: mimeType });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch(e) {
+    // Fallback: base64 data URI (works in sandboxed iframes)
+    try {
+      let b64;
+      if (typeof dataOrBytes === 'string') {
+        b64 = btoa(unescape(encodeURIComponent(dataOrBytes)));
+      } else {
+        // Uint8Array / ArrayBuffer
+        const bytes = dataOrBytes instanceof Uint8Array ? dataOrBytes : new Uint8Array(dataOrBytes);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        b64 = btoa(bin);
+      }
+      const a = document.createElement('a');
+      a.href = `data:${mimeType};base64,${b64}`;
+      a.download = filename; a.style.display = 'none';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+    } catch(e2) {
+      toast('⚠ Download blocked by browser — try opening the app in a full tab', true);
+    }
+  }
+}
+
 // JSON BACKUP / RESTORE
 // ════════════════════════════════════════════════════
 function getBackupData(selectedIds) {
@@ -1410,12 +1448,9 @@ function downloadJSON() {
   const selectedIds = getSelectedCharIds('json-char-list');
   if (characters.length >= 2 && !selectedIds.length) { toast('⚠ Select at least one character', true); return; }
   const data = getBackupData(selectedIds.length ? selectedIds : null);
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
   const charPart = selectedIds.length < characters.length ? `-${selectedIds.length}chars` : '';
-  a.href = url; a.download = `Chronicles-backup${charPart}-${new Date().toISOString().slice(0,10)}.json`;
-  a.click(); URL.revokeObjectURL(url);
+  const filename = `Chronicles-backup${charPart}-${new Date().toISOString().slice(0,10)}.json`;
+  triggerDownload(filename, 'application/json', JSON.stringify(data, null, 2));
   toast(`✦ Backup downloaded (${data.characters.length} character${data.characters.length !== 1 ? 's' : ''})`);
 }
 
@@ -1833,17 +1868,15 @@ async function exportPDF() {
     bar.style.width='92%';
     await new Promise(r=>setTimeout(r,30));
     const finalBytes = await pdfDoc.save();
-    const blob=new Blob([finalBytes],{type:'application/pdf'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
     const charPart=charsToExport.length<characters.length?'-'+charsToExport.length+'chars':'';
-    a.href=url; a.download='Chronicles'+charPart+'-'+new Date().toISOString().slice(0,10)+'.pdf';
-    a.click(); URL.revokeObjectURL(url);
+    const filename='Chronicles'+charPart+'-'+new Date().toISOString().slice(0,10)+'.pdf';
+    triggerDownload(filename, 'application/pdf', finalBytes);
     toast('✦ Fillable PDF exported ('+charsToExport.length+' character'+(charsToExport.length!==1?'s':'')+')');
   } catch(err) {
     console.warn('pdf-lib error, falling back:', err);
     const charPart=charsToExport.length<characters.length?'-'+charsToExport.length+'chars':'';
-    doc.save('Chronicles'+charPart+'-'+new Date().toISOString().slice(0,10)+'.pdf');
+    const filename='Chronicles'+charPart+'-'+new Date().toISOString().slice(0,10)+'.pdf';
+    triggerDownload(filename, 'application/pdf', doc.output('arraybuffer'));
     toast('✦ PDF exported ('+charsToExport.length+' character'+(charsToExport.length!==1?'s':'')+')');
   }
 
