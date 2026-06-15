@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <style>
 :root {
   --ink:#1a1410;--parchment:#f5edd8;--parchment-dark:#e8d9b8;
@@ -1581,270 +1582,273 @@ async function exportPDF() {
   if (characters.length >= 2 && !selectedIds.length) { toast('⚠ Select at least one character', true); return; }
   const charsToExport = selectedIds.length ? characters.filter(c => selectedIds.includes(c.id)) : characters;
   const progress = document.getElementById('pdf-progress'), bar = document.getElementById('pdf-bar');
-  progress.style.display = 'block'; bar.style.width = '8%';
+  progress.style.display = 'block'; bar.style.width = '5%';
   await new Promise(r => setTimeout(r, 50));
 
+  // Step 1: draw visual layout with jsPDF
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W = 210, H = 297;
-  const ML = 14, MR = 14, MT = 14, MB = 14; // margins
+  const ML = 14, MR = 14, MT = 14, MB = 14;
   const CW = W - ML - MR;
+  const MM = 2.8346; // mm to PDF points
+  const fieldSpecs = []; // {page, name, value, x, y, w, h, multiline}
+  let pageIndex = 0;
 
-  // ── decorative page border ──────────────────────────────
-  function drawPageBorder() {
-    doc.setFillColor(252, 248, 240);
-    doc.rect(0, 0, W, H, 'F');
-    // outer rule
-    doc.setDrawColor(160, 130, 80); doc.setLineWidth(0.6);
-    doc.rect(8, 8, W-16, H-16, 'S');
-    // inner rule
-    doc.setDrawColor(200, 168, 75); doc.setLineWidth(0.2);
-    doc.rect(10, 10, W-20, H-20, 'S');
-    // corner diamonds
-    const corners = [[8,8],[W-8,8],[8,H-8],[W-8,H-8]];
-    doc.setFillColor(160,130,80);
-    corners.forEach(([cx,cy]) => {
-      doc.rect(cx-1.2, cy-1.2, 2.4, 2.4, 'F');
-    });
+  function addField(name, value, xMM, yMM, wMM, hMM, multiline) {
+    fieldSpecs.push({ page: pageIndex, name, value: String(value||''),
+      x: xMM * MM, y: (H - yMM - hMM) * MM,
+      w: wMM * MM, h: hMM * MM, multiline: !!multiline });
   }
 
-  // ── section rule with label ─────────────────────────────
+  function drawPageBorder() {
+    doc.setFillColor(252,248,240); doc.rect(0,0,W,H,'F');
+    doc.setDrawColor(160,130,80); doc.setLineWidth(0.6); doc.rect(8,8,W-16,H-16,'S');
+    doc.setDrawColor(200,168,75); doc.setLineWidth(0.2); doc.rect(10,10,W-20,H-20,'S');
+    doc.setFillColor(160,130,80);
+    [[8,8],[W-8,8],[8,H-8],[W-8,H-8]].forEach(([cx,cy]) => doc.rect(cx-1.2,cy-1.2,2.4,2.4,'F'));
+  }
+
   function sectionRule(label, y) {
-    doc.setDrawColor(160,130,80); doc.setLineWidth(0.3);
-    doc.line(ML, y, W-MR, y);
+    doc.setDrawColor(160,130,80); doc.setLineWidth(0.3); doc.line(ML,y,W-MR,y);
     if (label) {
-      doc.setFillColor(252,248,240);
-      const tw = doc.getTextWidth(label) + 4;
-      doc.rect(W/2 - tw/2, y-3, tw, 4.5, 'F');
-      doc.setFont('times','bold'); doc.setFontSize(6.5);
-      doc.setTextColor(120,90,40);
-      doc.text(label.toUpperCase(), W/2, y+0.8, {align:'center'});
+      doc.setFillColor(252,248,234);
+      const tw = doc.getTextWidth(label)+4;
+      doc.rect(W/2-tw/2,y-3,tw,4.5,'F');
+      doc.setFont('times','bold'); doc.setFontSize(6.5); doc.setTextColor(120,90,40);
+      doc.text(label.toUpperCase(),W/2,y+0.8,{align:'center'});
     }
   }
 
-  // ── character sheet (one page, scales to fit) ───────────
-  function drawCharPage(c) {
+  function drawCharPage(c, charIdx) {
     drawPageBorder();
-    let y = MT + 2;
+    const pfx = 'char_'+charIdx+'_';
+    let y = MT+2;
 
-    // ── header band ──
-    doc.setFillColor(30, 18, 6);
-    doc.rect(ML, y, CW, 18, 'F');
-    // gold rule top of band
+    // Header band
+    doc.setFillColor(30,18,6); doc.rect(ML,y,CW,18,'F');
     doc.setDrawColor(200,168,75); doc.setLineWidth(0.4);
-    doc.line(ML, y, ML+CW, y);
-    doc.line(ML, y+18, ML+CW, y+18);
+    doc.line(ML,y,ML+CW,y); doc.line(ML,y+18,ML+CW,y+18);
+    doc.setFont('times','bold'); doc.setFontSize(18); doc.setTextColor(232,210,130);
+    doc.text(c.name,ML+5,y+12);
+    addField(pfx+'name', c.name, ML+4, y+1, 90, 10);
+    doc.setFont('times','italic'); doc.setFontSize(8.5); doc.setTextColor(180,155,100);
+    doc.text('Level '+c.level+'  \u00b7  '+c.race+'  \u00b7  '+c.cls, W-MR-3, y+7, {align:'right'});
 
-    // name
-    doc.setFont('times','bold'); doc.setFontSize(18);
-    doc.setTextColor(232, 210, 130);
-    doc.text(c.name, ML+5, y+12);
-
-    // level / race / class — right side
-    doc.setFont('times','italic'); doc.setFontSize(8.5);
-    doc.setTextColor(180,155,100);
-    doc.text(`Level ${c.level}  ·  ${c.race}  ·  ${c.cls}`, W-MR-3, y+7, {align:'right'});
-
-    // HP bar inside header
-    const hpFill = Math.max(0, Math.min(1, c.hp / c.maxhp));
-    const barW = 52, barH = 4, barX = W-MR-3-barW, barY = y+11;
-    doc.setFillColor(20,10,5); doc.rect(barX, barY, barW, barH, 'F');
-    const fc = hpFill > 0.5 ? [60,140,60] : hpFill > 0.25 ? [180,120,30] : [180,40,40];
-    doc.setFillColor(...fc); doc.rect(barX, barY, barW*hpFill, barH, 'F');
-    doc.setDrawColor(120,90,40); doc.setLineWidth(0.2); doc.rect(barX, barY, barW, barH, 'S');
+    // HP bar in header
+    const hpFill = Math.max(0,Math.min(1,c.hp/c.maxhp));
+    const barW=52,barH=4,barX=W-MR-3-barW,barY=y+11;
+    doc.setFillColor(20,10,5); doc.rect(barX,barY,barW,barH,'F');
+    const fc=hpFill>.5?[60,140,60]:hpFill>.25?[180,120,30]:[180,40,40];
+    doc.setFillColor(...fc); doc.rect(barX,barY,barW*hpFill,barH,'F');
+    doc.setDrawColor(120,90,40); doc.setLineWidth(0.2); doc.rect(barX,barY,barW,barH,'S');
     doc.setFont('times','bold'); doc.setFontSize(7); doc.setTextColor(230,210,160);
-    doc.text(`HP  ${c.hp} / ${c.maxhp}`, barX + barW/2, barY+3, {align:'center'});
+    doc.text('HP  '+c.hp+' / '+c.maxhp, barX+barW/2, barY+3, {align:'center'});
     y += 22;
 
-    // ── stat blocks ──
-    const stats = c.stats || [];
+    // Stat blocks
+    const stats = c.stats||[];
     if (stats.length) {
-      const cols = Math.min(10, stats.length);
-      const bw = CW / cols, bh = 16;
-      stats.slice(0, cols).forEach((s, idx) => {
-        const bx = ML + idx * bw;
-        const even = idx % 2 === 0;
-        doc.setFillColor(even ? 245 : 237, even ? 239 : 232, even ? 225 : 214);
-        doc.rect(bx, y, bw, bh, 'F');
-        doc.setDrawColor(160,130,80); doc.setLineWidth(0.15);
-        doc.rect(bx, y, bw, bh, 'S');
-        // stat name
+      const cols=Math.min(10,stats.length), bw=CW/cols, bh=16;
+      stats.slice(0,cols).forEach((s,idx) => {
+        const bx=ML+idx*bw, even=idx%2===0;
+        doc.setFillColor(even?245:237,even?239:232,even?225:214);
+        doc.rect(bx,y,bw,bh,'F');
+        doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(bx,y,bw,bh,'S');
         doc.setFont('times','bold'); doc.setFontSize(5.5); doc.setTextColor(100,70,25);
-        doc.text((s.name||'').toUpperCase().slice(0,5), bx+bw/2, y+4, {align:'center'});
-        // stat value
+        doc.text((s.name||'').toUpperCase().slice(0,5),bx+bw/2,y+4,{align:'center'});
         doc.setFont('times','bold'); doc.setFontSize(12); doc.setTextColor(15,10,5);
-        doc.text(s.val !== '' ? String(s.val) : '—', bx+bw/2, y+11.5, {align:'center'});
-        // modifier
-        if (s.mod !== '') {
-          doc.setFont('times','italic'); doc.setFontSize(6); doc.setTextColor(100,70,25);
-          doc.text(String(s.mod), bx+bw/2, y+15.2, {align:'center'});
-        }
+        doc.text(s.val!==''?String(s.val):'—',bx+bw/2,y+11.5,{align:'center'});
+        if (s.mod!=='') { doc.setFont('times','italic'); doc.setFontSize(6); doc.setTextColor(100,70,25); doc.text(String(s.mod),bx+bw/2,y+15.2,{align:'center'}); }
+        addField(pfx+'stat_'+idx+'_val', s.val, bx+1, y+5, bw-2, 7);
+        addField(pfx+'stat_'+idx+'_mod', s.mod, bx+1, y+12.5, bw-2, 3.5);
       });
-      y += bh + 4;
+      y += bh+4;
     }
 
-    // ── two-column layout: left = info boxes, right = notes ──
-    const colGap = 5;
-    const leftW  = 58;
-    const rightW = CW - leftW - colGap;
-    const leftX  = ML;
-    const rightX = ML + leftW + colGap;
-    let ly = y, ry = y;
+    // Two-column body
+    const colGap=5, leftW=58, rightW=CW-leftW-colGap;
+    const leftX=ML, rightX=ML+leftW+colGap;
+    let ly=y, ry=y;
 
-    // left: identity boxes
-    const fields = [
-      ['Race',  c.race], ['Class', c.cls], ['Level', String(c.level)]
-    ];
-    fields.forEach(([label, val]) => {
-      doc.setFillColor(242,236,220); doc.rect(leftX, ly, leftW, 9, 'F');
-      doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(leftX, ly, leftW, 9, 'S');
+    // Left info boxes
+    [['Race',c.race],['Class',c.cls],['Level',String(c.level)]].forEach(([label,val]) => {
+      doc.setFillColor(242,236,220); doc.rect(leftX,ly,leftW,9,'F');
+      doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(leftX,ly,leftW,9,'S');
       doc.setFont('times','bold'); doc.setFontSize(5.5); doc.setTextColor(100,70,25);
-      doc.text(label.toUpperCase(), leftX+2.5, ly+3.8);
+      doc.text(label.toUpperCase(),leftX+2.5,ly+3.8);
       doc.setFont('times','normal'); doc.setFontSize(9); doc.setTextColor(20,12,5);
-      doc.text(String(val||'—'), leftX+2.5, ly+7.8);
-      ly += 10;
+      doc.text(String(val||'—'),leftX+2.5,ly+7.8);
+      addField(pfx+label.toLowerCase(), val, leftX+1, ly+4.5, leftW-2, 4);
+      ly+=10;
     });
 
-    // left: HP box with bar
-    doc.setFillColor(242,236,220); doc.rect(leftX, ly, leftW, 13, 'F');
-    doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(leftX, ly, leftW, 13, 'S');
+    // HP box
+    doc.setFillColor(242,236,220); doc.rect(leftX,ly,leftW,13,'F');
+    doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(leftX,ly,leftW,13,'S');
     doc.setFont('times','bold'); doc.setFontSize(5.5); doc.setTextColor(100,70,25);
-    doc.text('HIT POINTS', leftX+2.5, ly+3.8);
+    doc.text('HIT POINTS',leftX+2.5,ly+3.8);
     doc.setFont('times','bold'); doc.setFontSize(10); doc.setTextColor(20,12,5);
-    doc.text(`${c.hp} / ${c.maxhp}`, leftX+2.5, ly+9.5);
-    const hpFill2 = Math.max(0, Math.min(1, c.hp / c.maxhp));
-    const miniBarW = leftW - 5, miniBarH = 2.5, miniBarY = ly + 10.5;
-    doc.setFillColor(200,185,160); doc.rect(leftX+2.5, miniBarY, miniBarW, miniBarH, 'F');
-    const fc2 = hpFill2 > 0.5 ? [60,140,60] : hpFill2 > 0.25 ? [180,120,30] : [180,40,40];
-    doc.setFillColor(...fc2); doc.rect(leftX+2.5, miniBarY, miniBarW*hpFill2, miniBarH, 'F');
-    doc.setDrawColor(140,110,70); doc.setLineWidth(0.1); doc.rect(leftX+2.5, miniBarY, miniBarW, miniBarH, 'S');
-    ly += 14;
+    doc.text(c.hp+' / '+c.maxhp,leftX+2.5,ly+9.5);
+    const hpFill2=Math.max(0,Math.min(1,c.hp/c.maxhp));
+    const mBW=leftW-5,mBH=2.5,mBY=ly+10.5;
+    doc.setFillColor(200,185,160); doc.rect(leftX+2.5,mBY,mBW,mBH,'F');
+    const fc2=hpFill2>.5?[60,140,60]:hpFill2>.25?[180,120,30]:[180,40,40];
+    doc.setFillColor(...fc2); doc.rect(leftX+2.5,mBY,mBW*hpFill2,mBH,'F');
+    doc.setDrawColor(140,110,70); doc.setLineWidth(0.1); doc.rect(leftX+2.5,mBY,mBW,mBH,'S');
+    addField(pfx+'hp_current', c.hp, leftX+1, ly+5.5, (leftW-4)/2, 5);
+    addField(pfx+'hp_max', c.maxhp, leftX+1+(leftW-4)/2+1, ly+5.5, (leftW-4)/2, 5);
+    ly+=14;
 
-    // right: notes panel
-    const notesH = H - MB - ry - 6;
-    doc.setFillColor(248,244,234); doc.rect(rightX, ry, rightW, notesH, 'F');
-    doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(rightX, ry, rightW, notesH, 'S');
-    sectionRule('Notes & Backstory', ry + 0.1);
-    ry += 6;
-
-    if (c.notes) {
-      // plain-text render inside the box, clipped
-      const maxNotesY = ry + notesH - 8;
-      const noteLines = doc.splitTextToSize(pdfStripInline(c.notes.replace(/#+\s*/g,'').replace(/\*\*/g,'').replace(/\*/g,'')), rightW - 5);
-      doc.setFont('times','normal'); doc.setFontSize(8); doc.setTextColor(30,20,10);
-      for (const line of noteLines) {
-        if (ry > maxNotesY) break;
-        doc.text(line, rightX+3, ry);
-        ry += 4.2;
-      }
+    // Extra notes box bottom-left
+    const leftRemH=H-MB-ly-6;
+    if (leftRemH>10) {
+      doc.setFillColor(248,244,234); doc.rect(leftX,ly,leftW,leftRemH,'F');
+      doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(leftX,ly,leftW,leftRemH,'S');
+      doc.setFont('times','bold'); doc.setFontSize(5.5); doc.setTextColor(100,70,25);
+      doc.text('EXTRA NOTES',leftX+2.5,ly+4);
+      addField(pfx+'extra_notes', '', leftX+1, ly+5, leftW-2, leftRemH-6, true);
     }
 
-    // ── footer rule ──
-    const footY = H - MB - 4;
-    doc.setDrawColor(160,130,80); doc.setLineWidth(0.3);
-    doc.line(ML, footY, W-MR, footY);
+    // Right notes panel
+    const notesH=H-MB-ry-6;
+    doc.setFillColor(248,244,234); doc.rect(rightX,ry,rightW,notesH,'F');
+    doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(rightX,ry,rightW,notesH,'S');
+    sectionRule('Notes & Backstory',ry+0.1);
+    ry+=6;
+    if (c.notes) {
+      const maxNY=ry+notesH-8;
+      const noteLines=doc.splitTextToSize(pdfStripInline(c.notes.replace(/#+\s*/g,'').replace(/\*\*/g,'').replace(/\*/g,'')),rightW-5);
+      doc.setFont('times','normal'); doc.setFontSize(8); doc.setTextColor(30,20,10);
+      for (const line of noteLines) { if(ry>maxNY)break; doc.text(line,rightX+3,ry); ry+=4.2; }
+    }
+    addField(pfx+'notes', c.notes||'', rightX+1, y+6, rightW-2, notesH-7, true);
+
+    // Footer
+    const footY=H-MB-4;
+    doc.setDrawColor(160,130,80); doc.setLineWidth(0.3); doc.line(ML,footY,W-MR,footY);
     doc.setFont('times','italic'); doc.setFontSize(6.5); doc.setTextColor(140,110,60);
-    doc.text('The Chronicles', ML, footY+3);
-    doc.text(new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), W-MR, footY+3, {align:'right'});
+    doc.text('The Chronicles',ML,footY+3);
+    doc.text(new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),W-MR,footY+3,{align:'right'});
   }
 
-  // ── render characters ────────────────────────────────────
-  bar.style.width = '15%';
-  for (let ci = 0; ci < charsToExport.length; ci++) {
-    if (ci > 0) doc.addPage();
-    drawCharPage(charsToExport[ci]);
-    bar.style.width = (15 + ((ci+1)/charsToExport.length)*50) + '%';
-    if (ci % 2 === 1) await new Promise(r => setTimeout(r, 0));
+  // Render character pages
+  bar.style.width='15%';
+  for (let ci=0;ci<charsToExport.length;ci++) {
+    if (ci>0) { doc.addPage(); pageIndex++; }
+    drawCharPage(charsToExport[ci],ci);
+    bar.style.width=(15+((ci+1)/charsToExport.length)*35)+'%';
+    if (ci%2===1) await new Promise(r=>setTimeout(r,0));
   }
 
-  // ── journal entries (flow across pages) ─────────────────
+  // Journal pages
   if (journal.length) {
-    doc.addPage(); drawPageBorder();
-    let y = MT + 4;
-    // Journal title page header
-    doc.setFillColor(30,18,6); doc.rect(ML, y, CW, 14, 'F');
+    doc.addPage(); pageIndex++; drawPageBorder();
+    let y=MT+4;
+    doc.setFillColor(30,18,6); doc.rect(ML,y,CW,14,'F');
     doc.setDrawColor(200,168,75); doc.setLineWidth(0.4);
-    doc.line(ML, y, ML+CW, y); doc.line(ML, y+14, ML+CW, y+14);
+    doc.line(ML,y,ML+CW,y); doc.line(ML,y+14,ML+CW,y+14);
     doc.setFont('times','bold'); doc.setFontSize(20); doc.setTextColor(232,210,130);
-    doc.text('Journal', W/2, y+10, {align:'center'});
-    y += 20;
+    doc.text('Journal',W/2,y+10,{align:'center'});
+    y+=20;
 
-    const tagColors = { session:[60,100,50], lore:[40,70,110], quest:[130,85,25], npc:[90,45,90], other:[80,75,70] };
-    const tagLabels = { session:'Session Log', lore:'World Lore', quest:'Quest / Hook', npc:'NPC Notes', other:'Other' };
+    const tagColors={session:[60,100,50],lore:[40,70,110],quest:[130,85,25],npc:[90,45,90],other:[80,75,70]};
+    const tagLabels={session:'Session Log',lore:'World Lore',quest:'Quest / Hook',npc:'NPC Notes',other:'Other'};
 
-    function checkJournalPage(cy, need) {
-      if (cy + need > H - MB - 4) {
-        doc.addPage(); drawPageBorder(); cy = MT + 4;
-        // subtle running header
+    function checkJournalPage(cy,need) {
+      if (cy+need>H-MB-4) {
+        doc.addPage(); pageIndex++; drawPageBorder(); cy=MT+4;
         doc.setFont('times','italic'); doc.setFontSize(6.5); doc.setTextColor(160,130,80);
-        doc.text('The Chronicles — Journal', W/2, cy, {align:'center'});
-        cy += 5;
+        doc.text('The Chronicles \u2014 Journal',W/2,cy,{align:'center'}); cy+=5;
       }
       return cy;
     }
 
-    for (let ei = 0; ei < journal.length; ei++) {
-      const e = journal[ei];
-      y = checkJournalPage(y, 30);
-
-      // tag chip + date row
-      const tc = tagColors[e.tag] || tagColors.other;
-      const tagLabel = tagLabels[e.tag] || 'Other';
-      doc.setFillColor(...tc);
-      doc.roundedRect(ML, y, 30, 5, 1, 1, 'F');
+    for (let ei=0;ei<journal.length;ei++) {
+      const e=journal[ei];
+      y=checkJournalPage(y,30);
+      const tc=tagColors[e.tag]||tagColors.other;
+      doc.setFillColor(...tc); doc.roundedRect(ML,y,30,5,1,1,'F');
       doc.setFont('times','bold'); doc.setFontSize(5.5); doc.setTextColor(255,252,245);
-      doc.text(tagLabel.toUpperCase(), ML+15, y+3.5, {align:'center'});
+      doc.text((tagLabels[e.tag]||'Other').toUpperCase(),ML+15,y+3.5,{align:'center'});
       doc.setFont('times','italic'); doc.setFontSize(7.5); doc.setTextColor(110,80,35);
-      doc.text(e.date, W-MR, y+3.8, {align:'right'});
-      y += 7;
+      doc.text(e.date,W-MR,y+3.8,{align:'right'}); y+=7;
 
-      // entry title
-      y = checkJournalPage(y, 10);
+      y=checkJournalPage(y,10);
       doc.setFont('times','bold'); doc.setFontSize(13); doc.setTextColor(20,12,5);
-      const titleLines = doc.splitTextToSize(e.title, CW);
-      titleLines.forEach(l => { y = checkJournalPage(y, 7); doc.text(l, ML, y); y += 6.5; });
+      const titleLines=doc.splitTextToSize(e.title,CW);
+      titleLines.forEach(l=>{ y=checkJournalPage(y,7); doc.text(l,ML,y); y+=6.5; });
+      doc.setDrawColor(160,130,80); doc.setLineWidth(0.2); doc.line(ML,y,ML+CW,y); y+=4;
 
-      // rule under title
-      doc.setDrawColor(160,130,80); doc.setLineWidth(0.2);
-      doc.line(ML, y, ML+CW, y); y += 4;
-
-      // body text
+      const entryStartY=y, entryStartPage=pageIndex;
       if (e.body) {
-        const bodyLines = doc.splitTextToSize(pdfStripInline(e.body), CW);
+        const bodyLines=doc.splitTextToSize(pdfStripInline(e.body),CW);
         doc.setFont('times','normal'); doc.setFontSize(8.5); doc.setTextColor(30,20,10);
-        for (const line of bodyLines) {
-          y = checkJournalPage(y, 5);
-          doc.text(line, ML, y); y += 4.5;
-        }
+        for (const line of bodyLines) { y=checkJournalPage(y,5); doc.text(line,ML,y); y+=4.5; }
       }
-      y += 3;
+      const entryH=Math.min(y-entryStartY+2,H-MB-entryStartY-6);
+      if (entryH>4) fieldSpecs.push({page:entryStartPage,name:'journal_'+ei+'_body',value:pdfStripInline(e.body||''),x:ML*MM,y:(H-entryStartY-entryH)*MM,w:CW*MM,h:entryH*MM,multiline:true});
 
-      // divider between entries
-      if (ei < journal.length - 1) {
-        y = checkJournalPage(y, 8);
-        doc.setDrawColor(160,130,80); doc.setLineWidth(0.15);
-        doc.line(ML+20, y, W-MR-20, y);
-        y += 6;
-      }
-      if (ei % 4 === 3) await new Promise(r => setTimeout(r, 0));
+      y+=3;
+      if (ei<journal.length-1) { y=checkJournalPage(y,8); doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.line(ML+20,y,W-MR-20,y); y+=6; }
+      if (ei%4===3) await new Promise(r=>setTimeout(r,0));
     }
 
-    // footer on last journal page
-    const footY = H - MB - 4;
-    doc.setDrawColor(160,130,80); doc.setLineWidth(0.3);
-    doc.line(ML, footY, W-MR, footY);
+    const footY=H-MB-4;
+    doc.setDrawColor(160,130,80); doc.setLineWidth(0.3); doc.line(ML,footY,W-MR,footY);
     doc.setFont('times','italic'); doc.setFontSize(6.5); doc.setTextColor(140,110,60);
-    doc.text('The Chronicles', ML, footY+3);
-    doc.text(new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), W-MR, footY+3, {align:'right'});
+    doc.text('The Chronicles',ML,footY+3);
+    doc.text(new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),W-MR,footY+3,{align:'right'});
   }
 
-  bar.style.width = '95%';
-  await new Promise(r => setTimeout(r, 80));
-  const charPart = charsToExport.length < characters.length ? `-${charsToExport.length}chars` : '';
-  doc.save(`Chronicles${charPart}-${new Date().toISOString().slice(0,10)}.pdf`);
-  bar.style.width = '100%';
-  setTimeout(() => { progress.style.display = 'none'; bar.style.width = '0'; }, 900);
-  toast(`✦ PDF exported (${charsToExport.length} character${charsToExport.length !== 1 ? 's' : ''})`);
+  bar.style.width='60%';
+  await new Promise(r=>setTimeout(r,30));
+
+  // Step 2: inject AcroForm fields with pdf-lib
+  try {
+    const { PDFDocument, rgb, PDFName } = PDFLib;
+    const jsPdfBytes = doc.output('arraybuffer');
+    const pdfDoc = await PDFDocument.load(jsPdfBytes);
+    const pages = pdfDoc.getPages();
+    const form  = pdfDoc.getForm();
+
+    for (const f of fieldSpecs) {
+      const pg = pages[f.page];
+      if (!pg) continue;
+      const field = form.createTextField(f.name);
+      field.setText(f.value);
+      if (f.multiline) field.setMultiline(true);
+      field.addToPage(pg, {
+        x:f.x, y:f.y, width:f.w, height:f.h,
+        borderWidth:0,
+        textColor: rgb(0.08,0.05,0.02),
+        fontSize: f.h*MM > 6 ? 9 : 7
+      });
+      // Make field background transparent
+      field.acroField.getWidgets().forEach(w => {
+        w.dict.set(PDFName.of('MK'), pdfDoc.context.obj({}));
+      });
+    }
+
+    bar.style.width='92%';
+    await new Promise(r=>setTimeout(r,30));
+    const finalBytes = await pdfDoc.save();
+    const blob=new Blob([finalBytes],{type:'application/pdf'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const charPart=charsToExport.length<characters.length?'-'+charsToExport.length+'chars':'';
+    a.href=url; a.download='Chronicles'+charPart+'-'+new Date().toISOString().slice(0,10)+'.pdf';
+    a.click(); URL.revokeObjectURL(url);
+    toast('✦ Fillable PDF exported ('+charsToExport.length+' character'+(charsToExport.length!==1?'s':'')+')');
+  } catch(err) {
+    console.warn('pdf-lib error, falling back:', err);
+    const charPart=charsToExport.length<characters.length?'-'+charsToExport.length+'chars':'';
+    doc.save('Chronicles'+charPart+'-'+new Date().toISOString().slice(0,10)+'.pdf');
+    toast('✦ PDF exported ('+charsToExport.length+' character'+(charsToExport.length!==1?'s':'')+')');
+  }
+
+  bar.style.width='100%';
+  setTimeout(()=>{ progress.style.display='none'; bar.style.width='0'; },900);
 }
 
 // ════════════════════════════════════════════════════
