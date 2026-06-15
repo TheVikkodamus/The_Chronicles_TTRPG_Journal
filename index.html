@@ -1371,7 +1371,6 @@ function renderCharSelect(wrapId, listId) {
   const wrap = document.getElementById(wrapId);
   const list = document.getElementById(listId);
   if (!wrap || !list) return;
-  // Only show selector when there are 2+ characters
   wrap.style.display = characters.length >= 2 ? 'block' : 'none';
   list.innerHTML = characters.map(c =>
     `<label class="char-check-row">
@@ -1384,7 +1383,6 @@ function renderCharSelect(wrapId, listId) {
 
 function getSelectedCharIds(listId) {
   const boxes = document.querySelectorAll(`.char-sel-${listId}`);
-  // If selector not shown (0 or 1 chars), include all
   if (!boxes.length) return characters.map(c => c.id);
   return Array.from(boxes).filter(b => b.checked).map(b => Number(b.dataset.id));
 }
@@ -1398,13 +1396,10 @@ function toggleAllJsonChars(state) {
 }
 
 // ════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════
-// DOWNLOAD HELPER — uses base64 data URI to avoid
-// blob URL permission blocks in sandboxed contexts
+// DOWNLOAD HELPER
 // ════════════════════════════════════════════════════
 function triggerDownload(filename, mimeType, dataOrBytes) {
   try {
-    // Primary: blob URL (works in normal browser tabs)
     const blob = new Blob([dataOrBytes], { type: mimeType });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -1413,13 +1408,11 @@ function triggerDownload(filename, mimeType, dataOrBytes) {
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch(e) {
-    // Fallback: base64 data URI (works in sandboxed iframes)
     try {
       let b64;
       if (typeof dataOrBytes === 'string') {
         b64 = btoa(unescape(encodeURIComponent(dataOrBytes)));
       } else {
-        // Uint8Array / ArrayBuffer
         const bytes = dataOrBytes instanceof Uint8Array ? dataOrBytes : new Uint8Array(dataOrBytes);
         let bin = '';
         for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
@@ -1436,6 +1429,7 @@ function triggerDownload(filename, mimeType, dataOrBytes) {
   }
 }
 
+// ════════════════════════════════════════════════════
 // JSON BACKUP / RESTORE
 // ════════════════════════════════════════════════════
 function getBackupData(selectedIds) {
@@ -1620,14 +1614,13 @@ async function exportPDF() {
   progress.style.display = 'block'; bar.style.width = '5%';
   await new Promise(r => setTimeout(r, 50));
 
-  // Step 1: draw visual layout with jsPDF
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W = 210, H = 297;
   const ML = 14, MR = 14, MT = 14, MB = 14;
   const CW = W - ML - MR;
-  const MM = 2.8346; // mm to PDF points
-  const fieldSpecs = []; // {page, name, value, x, y, w, h, multiline}
+  const MM = 2.8346;
+  const fieldSpecs = [];
   let pageIndex = 0;
 
   function addField(name, value, xMM, yMM, wMM, hMM, multiline) {
@@ -1745,18 +1738,21 @@ async function exportPDF() {
       addField(pfx+'extra_notes', '', leftX+1, ly+5, leftW-2, leftRemH-6, true);
     }
 
-    // Right notes panel
+    // Right notes panel — now renders markdown!
     const notesH=H-MB-ry-6;
     doc.setFillColor(248,244,234); doc.rect(rightX,ry,rightW,notesH,'F');
     doc.setDrawColor(160,130,80); doc.setLineWidth(0.15); doc.rect(rightX,ry,rightW,notesH,'S');
     sectionRule('Notes & Backstory',ry+0.1);
     ry+=6;
+
     if (c.notes) {
-      const maxNY=ry+notesH-8;
-      const noteLines=doc.splitTextToSize(pdfStripInline(c.notes.replace(/#+\s*/g,'').replace(/\*\*/g,'').replace(/\*/g,'')),rightW-5);
-      doc.setFont('times','normal'); doc.setFontSize(8); doc.setTextColor(30,20,10);
-      for (const line of noteLines) { if(ry>maxNY)break; doc.text(line,rightX+3,ry); ry+=4.2; }
+      // ── FIX: use pdfRenderMD instead of plain stripped text ──
+      // clampedCheck keeps rendering within the notes panel without adding new pages
+      const maxNoteY = ry + notesH - 8;
+      const clampedCheck = (cy, need) => cy + need > maxNoteY ? maxNoteY : cy;
+      ry = pdfRenderMD(doc, c.notes, rightX+3, ry, rightW-6, clampedCheck);
     }
+
     addField(pfx+'notes', c.notes||'', rightX+1, y+6, rightW-2, notesH-7, true);
 
     // Footer
@@ -1839,7 +1835,7 @@ async function exportPDF() {
   bar.style.width='60%';
   await new Promise(r=>setTimeout(r,30));
 
-  // Step 2: inject AcroForm fields with pdf-lib
+  // Inject AcroForm fields with pdf-lib
   try {
     const { PDFDocument, rgb, PDFName } = PDFLib;
     const jsPdfBytes = doc.output('arraybuffer');
@@ -1859,7 +1855,6 @@ async function exportPDF() {
         textColor: rgb(0.08,0.05,0.02),
         fontSize: f.h*MM > 6 ? 9 : 7
       });
-      // Make field background transparent
       field.acroField.getWidgets().forEach(w => {
         w.dict.set(PDFName.of('MK'), pdfDoc.context.obj({}));
       });
