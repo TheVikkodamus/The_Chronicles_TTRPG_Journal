@@ -10,7 +10,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root {
   --ink:#1a1410;--parchment:#f5edd8;--parchment-dark:#e8d9b8;
@@ -138,9 +137,6 @@ select option{background:#1a0d05;}
 .btn-danger:hover{background:var(--blood);color:var(--parchment);}
 .btn-ghost{background:transparent;color:var(--gold-dim);border:1px solid #3a2910;font-size:.65rem;}
 .btn-ghost:hover{border-color:var(--gold-dim);color:var(--gold);}
-.btn-drive{background:linear-gradient(135deg,#1a3a1a,#2a6a2a);color:#90ee90;border:1px solid #2a5a2a;font-size:.7rem;}
-.btn-drive:hover{background:linear-gradient(135deg,#2a6a2a,#3a9a3a);box-shadow:0 4px 12px rgba(42,106,42,.4);transform:translateY(-1px);}
-.btn-drive:disabled{opacity:.4;cursor:not-allowed;transform:none;pointer-events:none;}
 .btn-pdf{background:linear-gradient(135deg,#4a1a1a,#8b2020);color:#ffaaaa;border:1px solid #6b1a1a;font-size:.7rem;}
 .btn-pdf:hover{background:linear-gradient(135deg,#7a2020,#b03030);box-shadow:0 4px 12px rgba(139,32,32,.4);transform:translateY(-1px);}
 /* chars */
@@ -248,16 +244,20 @@ select option{background:#1a0d05;}
 .backup-title{font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;color:var(--gold-light);margin-bottom:.5rem;letter-spacing:.04em;}
 .backup-desc{font-family:'IM Fell English',serif;font-style:italic;font-size:.9rem;color:#a89060;line-height:1.6;margin-bottom:1.2rem;}
 .backup-actions{display:flex;flex-direction:column;gap:.5rem;}
-.status-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:'Cinzel',serif;font-size:.6rem;font-weight:600;letter-spacing:.12em;padding:.3rem .8rem;border-radius:2px;border:1px solid;margin-bottom:.8rem;}
-.status-ok{border-color:#3a6a3a;color:#6aaa6a;background:rgba(45,106,45,.15);}
-.status-warn{border-color:#6a5a2a;color:#c8a84b;background:rgba(106,90,42,.15);}
-.status-err{border-color:#6a2a2a;color:#c84b4b;background:rgba(106,42,42,.15);}
-.drive-setup{margin-top:1.2rem;padding-top:1rem;border-top:1px solid #2a1a08;}
 .backup-stats{font-family:'Cinzel',serif;font-size:.65rem;color:var(--gold-dim);letter-spacing:.1em;}
 .backup-stats span{color:var(--gold);}
 .file-input-wrap{position:relative;overflow:hidden;display:inline-block;}
 .file-input-wrap input[type=file]{position:absolute;left:0;top:0;opacity:0;width:100%;height:100%;cursor:pointer;}
 .restore-preview{background:rgba(0,0,0,.4);border:1px solid #3a2910;border-radius:2px;padding:.8rem;margin-top:.8rem;font-family:'Crimson Pro',serif;font-size:.85rem;color:#a89060;display:none;line-height:1.6;}
+.char-check-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .5rem;border:1px solid #2a1a08;border-radius:2px;background:rgba(0,0,0,.25);cursor:pointer;transition:border-color .15s;}
+.char-check-row:hover{border-color:var(--gold-dim);}
+.char-check-row input[type=checkbox]{width:14px;height:14px;accent-color:var(--gold);cursor:pointer;flex-shrink:0;min-height:unset;}
+.char-check-row .ccr-name{font-family:'Cinzel',serif;font-size:.75rem;font-weight:600;color:var(--parchment);flex:1;}
+.char-check-row .ccr-meta{font-family:'IM Fell English',serif;font-style:italic;font-size:.7rem;color:var(--gold-dim);}
+body.light-mode .char-check-row{border-color:#c8a84b55;background:rgba(200,168,75,.06);}
+body.light-mode .char-check-row:hover{border-color:#8a6010;}
+body.light-mode .char-check-row .ccr-name{color:#2a1a0a;}
+body.light-mode .char-check-row .ccr-meta{color:#9a7828;}
 .progress-bar-wrap{margin:.6rem 0;display:none;}
 .progress-bar{height:3px;background:#2a1a08;border-radius:2px;overflow:hidden;}
 .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--gold-dim),var(--gold));transition:width .35s ease;border-radius:2px;}
@@ -636,7 +636,7 @@ select option{background:#1a0d05;}
         <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:.82rem;color:#7a6040;margin-bottom:.8rem">Type each player's d20 result — their Init Modifier is automatically added. Hit Apply to sort.</p>
         <div id="player-roll-inputs" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem;"></div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="applyPlayerRolls()" style="font-size:.65rem">✦ Apply & Sort</button>
+          <button class="btn btn-primary" onclick="applyPlayerRolls()" style="font-size:.65rem">✦ Apply &amp; Sort</button>
           <button class="btn btn-ghost" onclick="closePlayerRolls()" style="font-size:.6rem">Cancel</button>
         </div>
       </div>
@@ -737,8 +737,16 @@ select option{background:#1a0d05;}
     <div class="backup-card">
       <span class="backup-icon">📄</span>
       <div class="backup-title">Export to PDF</div>
-      <div class="backup-desc">Generate a formatted PDF with all characters and journal entries — perfect for printing or sharing with your party.</div>
+      <div class="backup-desc">Generate a formatted PDF with characters and journal entries. Choose which characters to include, or export all.</div>
       <div class="backup-actions">
+        <div id="pdf-char-select" style="display:none;margin-bottom:.9rem;">
+          <div style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.5rem;">Select Characters</div>
+          <div id="pdf-char-list" style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:.6rem;max-height:180px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent;"></div>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem;">
+            <button class="btn btn-ghost" onclick="toggleAllPdfChars(true)" style="font-size:.55rem;padding:.3rem .7rem;">✦ All</button>
+            <button class="btn btn-ghost" onclick="toggleAllPdfChars(false)" style="font-size:.55rem;padding:.3rem .7rem;">✕ None</button>
+          </div>
+        </div>
         <button class="btn btn-pdf" onclick="exportPDF()">📄 Download PDF</button>
         <div class="progress-bar-wrap" id="pdf-progress">
           <div class="progress-bar"><div class="progress-fill" id="pdf-bar"></div></div>
@@ -748,36 +756,22 @@ select option{background:#1a0d05;}
     <div class="backup-card">
       <span class="backup-icon">💾</span>
       <div class="backup-title">JSON Backup &amp; Restore</div>
-      <div class="backup-desc">Download a complete backup of all your data. Restore it at any time — no account or setup needed.</div>
+      <div class="backup-desc">Download a backup of your data. Choose specific characters to export, or back up everything at once.</div>
       <div class="backup-actions">
+        <div id="json-char-select" style="display:none;margin-bottom:.9rem;">
+          <div style="font-family:'Cinzel',serif;font-size:.6rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.5rem;">Select Characters</div>
+          <div id="json-char-list" style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:.6rem;max-height:180px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--gold-dim) transparent;"></div>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem;">
+            <button class="btn btn-ghost" onclick="toggleAllJsonChars(true)" style="font-size:.55rem;padding:.3rem .7rem;">✦ All</button>
+            <button class="btn btn-ghost" onclick="toggleAllJsonChars(false)" style="font-size:.55rem;padding:.3rem .7rem;">✕ None</button>
+          </div>
+        </div>
         <button class="btn btn-ghost" onclick="downloadJSON()">⬇ Download Backup</button>
         <div class="file-input-wrap">
           <button class="btn btn-ghost">⬆ Restore from File</button>
           <input type="file" accept=".json" onchange="restoreJSON(event)"/>
         </div>
         <div class="restore-preview" id="restore-preview"></div>
-      </div>
-    </div>
-    <div class="backup-card" style="grid-column:1/-1">
-      <span class="backup-icon">🔵</span>
-      <div class="backup-title">Google Drive Backup</div>
-      <div class="backup-desc">Upload your Chronicles backup directly to Google Drive. Set up once with a free OAuth Client ID, then back up with one click.</div>
-      <div id="drive-status-wrap"></div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem">
-        <button class="btn btn-drive" id="drive-backup-btn" onclick="driveBackup()" disabled>🔵 Backup to Drive</button>
-        <button class="btn btn-ghost" id="drive-signout-btn" onclick="driveSignOut()" style="display:none">Sign Out</button>
-      </div>
-      <div class="drive-setup">
-        <div class="section-title" style="margin-bottom:.8rem">Google OAuth Setup</div>
-        <p style="font-family:'IM Fell English',serif;font-style:italic;font-size:.88rem;color:#a89060;line-height:1.7;margin-bottom:.9rem">
-          <strong style="color:var(--gold-dim);font-style:normal">One-time setup:</strong> Visit <strong style="color:var(--gold-dim);font-style:normal">console.cloud.google.com</strong> → New Project → APIs &amp; Services → Credentials → Create OAuth 2.0 Client ID (Web Application). Add your page's URL to <em>Authorised JavaScript Origins</em>. Copy the Client ID and paste it below.
-        </p>
-        <label>OAuth Client ID</label>
-        <input type="text" id="drive-client-id" placeholder="xxxxxxxxxx-xxxx.apps.googleusercontent.com"/>
-        <div style="margin-top:.7rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-ghost" onclick="initDrive()">✓ Connect to Drive</button>
-          <span id="drive-connect-status" style="font-family:'Cinzel',serif;font-size:.6rem;color:var(--gold-dim);letter-spacing:.1em"></span>
-        </div>
       </div>
     </div>
   </div>
@@ -793,7 +787,6 @@ select option{background:#1a0d05;}
 const STORE_KEY = 'Chronicles_data';
 const TAG_LABEL = {session:'Session Log',lore:'World Lore',quest:'Quest / Hook',npc:'NPC Notes',other:'Other'};
 
-// Computed once, reused everywhere — avoids repeated string building
 const INPUT_STYLE = "width:100%;background:var(--input-bg);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--text-primary);font-family:'Crimson Pro',serif;font-size:1rem;padding:.35rem .5rem;outline:none;border-radius:2px;";
 const CINZEL_INPUT_STYLE = "width:100%;background:var(--input-bg);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--text-primary);font-family:'Cinzel',serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.35rem .5rem;outline:none;border-radius:2px;";
 const IFELL_INPUT_STYLE = "width:100%;min-height:80px;resize:vertical;background:var(--input-bg);border:1px solid #3a2910;border-bottom-color:var(--gold-dim);color:var(--text-primary);font-family:'IM Fell English',serif;font-size:1rem;line-height:1.6;font-style:italic;padding:.45rem .7rem;outline:none;border-radius:2px;";
@@ -803,19 +796,17 @@ const INIT_INPUT_STYLE = "width:48px;text-align:center;background:var(--input-bg
 // STATE
 // ════════════════════════════════════════════════════
 let characters = [], journal = [], rollHistory = [], journalFilter = 'all';
-let driveAccessToken = null, driveClientId = '', driveTokenClient = null, driveTokenExpiry = 0;
 let showMods = true, isLightMode = false;
 let showInitCol = true, showACCol = true, showDefCol = true, showArmorCol = true, defModeActive = false;
 let combatants = [], currentTurn = 0, round = 1;
 let torchPanelOpen = true, torchTotal = 3600, torchRemaining = 3600, torchInterval = null, torchRunning = false, torchName = 'Torch';
 
 // ════════════════════════════════════════════════════
-// PERSISTENCE — localStorage auto-save & restore
+// PERSISTENCE
 // ════════════════════════════════════════════════════
 let _saveTimer = null;
 
 function scheduleSave() {
-  // Debounce: coalesce rapid changes into a single write
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(persistSave, 400);
 }
@@ -825,9 +816,7 @@ function persistSave() {
     const payload = { v: 2, characters, journal, rollHistory };
     localStorage.setItem(STORE_KEY, JSON.stringify(payload));
     flashAutosave();
-  } catch (e) {
-    // Quota exceeded or private mode — silently ignore
-  }
+  } catch (e) {}
 }
 
 function persistLoad() {
@@ -838,7 +827,7 @@ function persistLoad() {
     characters = data.characters || [];
     journal = data.journal || [];
     rollHistory = data.rollHistory || [];
-  } catch (e) { /* corrupt data — start fresh */ }
+  } catch (e) {}
 }
 
 function flashAutosave() {
@@ -849,7 +838,6 @@ function flashAutosave() {
   el._t = setTimeout(() => el.classList.remove('show'), 1800);
 }
 
-// Settings persistence (preferences, not data)
 function loadSettings() {
   showMods = localStorage.getItem('Chronicles_mods') !== 'false';
   isLightMode = localStorage.getItem('Chronicles_theme') === 'light';
@@ -857,7 +845,6 @@ function loadSettings() {
   showACCol = localStorage.getItem('Chronicles_ac') !== 'false';
   showDefCol = localStorage.getItem('Chronicles_def') !== 'false';
   showArmorCol = localStorage.getItem('Chronicles_armor') !== 'false';
-  driveClientId = localStorage.getItem('Chronicles_client_id') || '';
 }
 
 function saveSettings() {
@@ -949,7 +936,6 @@ function addCharacter() {
   });
   renderChars();
   scheduleSave();
-  // Reset form
   ['c-name','c-class','c-race','c-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('c-level').value = '1';
   document.getElementById('c-hp').value = 10;
@@ -1028,16 +1014,13 @@ function updateHP(id, delta) {
   if (!c) return;
   const v = parseInt(document.getElementById('hp-input-' + id).value) || 0;
   c.hp = Math.max(0, Math.min(c.maxhp, c.hp + v * delta));
-  // Targeted DOM update — only repaint the HP portion of this card
   const bar = document.querySelector(`[data-char-hp="${id}"] .hp-fill`);
   const label = document.querySelector(`[data-char-hp="${id}"] .hp-label span:last-child`);
   const miniBar = document.querySelector(`[data-char-minihp="${id}"] .hp-fill`);
-  const miniLabel = document.querySelector(`[data-char-minihp="${id}"] + div`);
   const pct = Math.max(0, Math.min(100, (c.hp / c.maxhp) * 100));
   if (bar) bar.style.width = pct + '%';
   if (label) label.textContent = c.hp + '/' + c.maxhp;
   if (miniBar) miniBar.style.width = pct + '%';
-  if (miniLabel) miniLabel.textContent = c.hp + '/' + c.maxhp + ' HP';
   scheduleSave();
 }
 
@@ -1156,12 +1139,11 @@ function renderChars() {
 // ════════════════════════════════════════════════════
 // JOURNAL
 // ════════════════════════════════════════════════════
-// Markdown cache — avoids reparsing identical text on every render
 const _mdCache = new Map();
 function mdParse(text) {
   if (_mdCache.has(text)) return _mdCache.get(text);
   const html = marked.parse(text || '');
-  if (_mdCache.size > 200) _mdCache.clear(); // prevent unbounded growth
+  if (_mdCache.size > 200) _mdCache.clear();
   _mdCache.set(text, html);
   return html;
 }
@@ -1186,7 +1168,6 @@ function addEntry() {
   scheduleSave();
   document.getElementById('j-title').value = '';
   document.getElementById('j-body').value = '';
-  // Reset to write tab
   document.getElementById('j-preview').style.display = 'none';
   document.getElementById('j-body').style.display = '';
   document.getElementById('j-tab-write').classList.add('active');
@@ -1216,7 +1197,7 @@ function saveJournalEdit(id) {
   e.title = title; e.body = body;
   e.tag = document.getElementById(`je-tag-${id}`).value;
   e.editing = false;
-  _mdCache.delete(e.body); // invalidate stale cache entry for old body
+  _mdCache.delete(e.body);
   renderJournal();
   scheduleSave();
   toast('✦ Entry updated');
@@ -1376,28 +1357,65 @@ function renderHistory() {
 }
 
 // ════════════════════════════════════════════════════
-// BACKUP STATS
+// BACKUP STATS & CHARACTER SELECTION
 // ════════════════════════════════════════════════════
 function updateBackupStats() {
   document.getElementById('backup-stats').innerHTML =
     `Characters: <span>${characters.length}</span> &nbsp;·&nbsp; Journal Entries: <span>${journal.length}</span> &nbsp;·&nbsp; Roll History: <span>${rollHistory.length}</span> rolls`;
+  renderCharSelect('pdf-char-select', 'pdf-char-list');
+  renderCharSelect('json-char-select', 'json-char-list');
+}
+
+function renderCharSelect(wrapId, listId) {
+  const wrap = document.getElementById(wrapId);
+  const list = document.getElementById(listId);
+  if (!wrap || !list) return;
+  // Only show selector when there are 2+ characters
+  wrap.style.display = characters.length >= 2 ? 'block' : 'none';
+  list.innerHTML = characters.map(c =>
+    `<label class="char-check-row">
+      <input type="checkbox" class="char-sel-${listId}" data-id="${c.id}" checked/>
+      <span class="ccr-name">${esc(c.name)}</span>
+      <span class="ccr-meta">Lvl ${esc(c.level)} ${esc(c.cls)}</span>
+    </label>`
+  ).join('');
+}
+
+function getSelectedCharIds(listId) {
+  const boxes = document.querySelectorAll(`.char-sel-${listId}`);
+  // If selector not shown (0 or 1 chars), include all
+  if (!boxes.length) return characters.map(c => c.id);
+  return Array.from(boxes).filter(b => b.checked).map(b => Number(b.dataset.id));
+}
+
+function toggleAllPdfChars(state) {
+  document.querySelectorAll('.char-sel-pdf-char-list').forEach(b => b.checked = state);
+}
+
+function toggleAllJsonChars(state) {
+  document.querySelectorAll('.char-sel-json-char-list').forEach(b => b.checked = state);
 }
 
 // ════════════════════════════════════════════════════
 // JSON BACKUP / RESTORE
 // ════════════════════════════════════════════════════
-function getBackupData() {
-  return { version: 2, exportedAt: new Date().toISOString(), characters, journal, rollHistory };
+function getBackupData(selectedIds) {
+  const chars = selectedIds ? characters.filter(c => selectedIds.includes(c.id)) : characters;
+  return { version: 2, exportedAt: new Date().toISOString(), characters: chars, journal, rollHistory };
 }
 
 function downloadJSON() {
   if (!characters.length && !journal.length) { toast('⚠ Nothing to back up yet!', true); return; }
-  const blob = new Blob([JSON.stringify(getBackupData(), null, 2)], { type: 'application/json' });
+  const selectedIds = getSelectedCharIds('json-char-list');
+  if (characters.length >= 2 && !selectedIds.length) { toast('⚠ Select at least one character', true); return; }
+  const data = getBackupData(selectedIds.length ? selectedIds : null);
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href = url; a.download = `Chronicles-backup-${new Date().toISOString().slice(0,10)}.json`;
+  const charPart = selectedIds.length < characters.length ? `-${selectedIds.length}chars` : '';
+  a.href = url; a.download = `Chronicles-backup${charPart}-${new Date().toISOString().slice(0,10)}.json`;
   a.click(); URL.revokeObjectURL(url);
-  toast('✦ Backup downloaded');
+  toast(`✦ Backup downloaded (${data.characters.length} character${data.characters.length !== 1 ? 's' : ''})`);
 }
 
 function restoreJSON(e) {
@@ -1559,9 +1577,11 @@ function pdfRenderMD(doc, mdText, x, y, maxW, checkPage) {
 
 async function exportPDF() {
   if (!characters.length && !journal.length) { toast('⚠ Nothing to export yet!', true); return; }
+  const selectedIds = getSelectedCharIds('pdf-char-list');
+  if (characters.length >= 2 && !selectedIds.length) { toast('⚠ Select at least one character', true); return; }
+  const charsToExport = selectedIds.length ? characters.filter(c => selectedIds.includes(c.id)) : characters;
   const progress = document.getElementById('pdf-progress'), bar = document.getElementById('pdf-bar');
   progress.style.display = 'block'; bar.style.width = '8%';
-  // Yield to browser to allow progress bar to paint
   await new Promise(r => setTimeout(r, 50));
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
@@ -1576,13 +1596,13 @@ async function exportPDF() {
     return currentY;
   }
   drawPageFrame();
-  if (characters.length) {
+  if (charsToExport.length) {
     doc.setFont('times','bold'); doc.setFontSize(22); doc.setTextColor(20,12,5);
     doc.text('Characters', W/2, y+9, {align:'center'}); y += 13;
     doc.setDrawColor(60,40,20); doc.setLineWidth(0.5); doc.line(M, y, W-M, y); y += 8;
     bar.style.width = '20%';
-    for (let ci = 0; ci < characters.length; ci++) {
-      const c = characters[ci];
+    for (let ci = 0; ci < charsToExport.length; ci++) {
+      const c = charsToExport[ci];
       y = checkPage(y, 55);
       doc.setFillColor(40,25,10); doc.rect(M, y, CW, 13, 'F');
       doc.setFont('times','bold'); doc.setFontSize(14); doc.setTextColor(255,250,240);
@@ -1615,8 +1635,7 @@ async function exportPDF() {
       doc.setDrawColor(140,110,70); doc.setLineWidth(0.1); doc.rect(M, y, CW, 2.5, 'S');
       y += 6;
       if (c.notes) { y = checkPage(y, 14); y = pdfRenderMD(doc, c.notes, M, y, CW, checkPage); y += 2; }
-      if (ci < characters.length - 1) { doc.addPage(); drawPageFrame(); y = M; }
-      // Yield every 3 characters to keep the browser responsive
+      if (ci < charsToExport.length - 1) { doc.addPage(); drawPageFrame(); y = M; }
       if (ci % 3 === 2) await new Promise(r => setTimeout(r, 0));
     }
     bar.style.width = '60%';
@@ -1648,108 +1667,11 @@ async function exportPDF() {
   }
   bar.style.width = '95%';
   await new Promise(r => setTimeout(r, 80));
-  doc.save(`Chronicles-${new Date().toISOString().slice(0,10)}.pdf`);
+  const charPart = charsToExport.length < characters.length ? `-${charsToExport.length}chars` : '';
+  doc.save(`Chronicles${charPart}-${new Date().toISOString().slice(0,10)}.pdf`);
   bar.style.width = '100%';
   setTimeout(() => { progress.style.display = 'none'; bar.style.width = '0'; }, 900);
-  toast('✦ PDF exported');
-}
-
-// ════════════════════════════════════════════════════
-// GOOGLE DRIVE
-// ════════════════════════════════════════════════════
-function saveClientId() {
-  // Debounced — no longer fires on every keystroke
-  clearTimeout(saveClientId._t);
-  saveClientId._t = setTimeout(() => {
-    driveClientId = document.getElementById('drive-client-id').value.trim();
-    localStorage.setItem('Chronicles_client_id', driveClientId);
-  }, 600);
-}
-
-function setDriveStatus(type, msg) {
-  const map = { ok:'status-ok', warn:'status-warn', err:'status-err' };
-  document.getElementById('drive-status-wrap').innerHTML =
-    `<div class="status-badge ${map[type]||'status-warn'}">${msg}</div>`;
-}
-
-function initDrive() {
-  const id = document.getElementById('drive-client-id').value.trim() || driveClientId;
-  if (!id) { toast('⚠ Paste your Client ID first', true); return; }
-  driveClientId = id; localStorage.setItem('Chronicles_client_id', id);
-  if (!window.google || !window.google.accounts) {
-    setDriveStatus('err', '✗ Google library not loaded — check your internet connection'); return;
-  }
-  document.getElementById('drive-connect-status').textContent = 'Connecting…';
-  try {
-    driveTokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: id, scope: 'https://www.googleapis.com/auth/drive.file',
-      callback: resp => {
-        if (resp.error) {
-          setDriveStatus('err', '✗ Auth failed: ' + resp.error);
-          document.getElementById('drive-connect-status').textContent = '';
-          toast('⚠ Auth failed: ' + resp.error, true);
-          if (driveTokenClient._reject) driveTokenClient._reject(new Error(resp.error));
-          return;
-        }
-        driveAccessToken = resp.access_token;
-        driveTokenExpiry = Date.now() + (resp.expires_in ? (resp.expires_in - 300) * 1000 : 3300000);
-        setDriveStatus('ok', '✓ Connected to Google Drive');
-        document.getElementById('drive-backup-btn').disabled = false;
-        document.getElementById('drive-signout-btn').style.display = 'inline-block';
-        document.getElementById('drive-connect-status').textContent = 'Connected ✓';
-        if (driveTokenClient._resolve) driveTokenClient._resolve(resp.access_token);
-      }
-    });
-    driveTokenClient.requestAccessToken({ prompt: 'consent' });
-  } catch (e) {
-    setDriveStatus('err', '✗ Invalid Client ID or domain not authorised');
-    document.getElementById('drive-connect-status').textContent = '';
-  }
-}
-
-function getFreshToken() {
-  return new Promise((resolve, reject) => {
-    if (driveAccessToken && Date.now() < driveTokenExpiry) { resolve(driveAccessToken); return; }
-    if (!driveTokenClient) { reject(new Error('Not connected — click Connect to Drive first')); return; }
-    driveTokenClient._resolve = resolve; driveTokenClient._reject = reject;
-    setDriveStatus('warn', '↻ Refreshing token…');
-    driveTokenClient.requestAccessToken({ prompt: '' });
-  });
-}
-
-function driveSignOut() {
-  if (driveAccessToken) google.accounts.oauth2.revoke(driveAccessToken);
-  driveAccessToken = null; driveTokenExpiry = 0; driveTokenClient = null;
-  document.getElementById('drive-backup-btn').disabled = true;
-  document.getElementById('drive-signout-btn').style.display = 'none';
-  setDriveStatus('warn', '○ Not connected'); toast('Signed out of Google Drive');
-}
-
-async function driveBackup() {
-  if (!driveTokenClient) { toast('⚠ Connect to Google Drive first', true); return; }
-  if (!characters.length && !journal.length) { toast('⚠ Nothing to back up yet!', true); return; }
-  const btn = document.getElementById('drive-backup-btn');
-  btn.disabled = true; btn.textContent = '⏳ Uploading…';
-  try {
-    const token = await getFreshToken();
-    const filename = `Chronicles-backup-${new Date().toISOString().slice(0,10)}.json`;
-    const content  = JSON.stringify(getBackupData(), null, 2);
-    const boundary = '--------ChroniclesBackupBoundary314159';
-    const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:filename,mimeType:'application/json'})}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`;
-    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': `multipart/related; boundary="${boundary}"` },
-      body
-    });
-    if (!res.ok) { const err = await res.json(); throw new Error((err.error && err.error.message) || res.statusText); }
-    toast(`✦ Backed up to Drive: ${filename}`);
-    setDriveStatus('ok', `✓ Last backup: ${new Date().toLocaleTimeString()}`);
-  } catch (e) {
-    toast('⚠ Upload failed: ' + e.message, true);
-    setDriveStatus('err', '✗ ' + e.message);
-  } finally {
-    btn.disabled = false; btn.textContent = '🔵 Backup to Drive';
-  }
+  toast(`✦ PDF exported (${charsToExport.length} character${charsToExport.length !== 1 ? 's' : ''})`);
 }
 
 // ════════════════════════════════════════════════════
@@ -1788,9 +1710,9 @@ function toggleTheme() {
 }
 
 // ════════════════════════════════════════════════════
-// TORCH TIMER  (guarded against double-start)
+// TORCH TIMER
 // ════════════════════════════════════════════════════
-let torchPanelOpen2 = true; // renamed to avoid clash
+let torchPanelOpen2 = true;
 function toggleTorchPanel() {
   torchPanelOpen2 = !torchPanelOpen2;
   const body = document.getElementById('torch-body');
@@ -1822,7 +1744,7 @@ function torchStartPause() {
     document.getElementById('torch-start-btn').className = 'torch-btn torch-btn-start';
     document.getElementById('torch-label').textContent = torchName + ' — Paused';
   } else {
-    if (torchInterval) clearInterval(torchInterval); // guard against double-start
+    if (torchInterval) clearInterval(torchInterval);
     torchRunning = true;
     torchInterval = setInterval(torchTick, 1000);
     document.getElementById('torch-start-btn').textContent = '⏸ Pause';
@@ -2116,7 +2038,6 @@ function nextTurn() {
   let attempts = 0;
   do { currentTurn = (currentTurn + 1) % combatants.length; attempts++; if (attempts > combatants.length) break; }
   while (combatants[currentTurn] && combatants[currentTurn].defeated);
-  // Detect round wrap-around
   if (currentTurn <= prev && attempts < combatants.length) {
     round++;
     document.getElementById('round-badge').textContent = `Round ${round}`;
@@ -2173,7 +2094,6 @@ function renderInitiative() {
 // ════════════════════════════════════════════════════
 // UTILITY
 // ════════════════════════════════════════════════════
-// XSS-safe HTML escape — used throughout render functions
 function esc(str) {
   if (str == null) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -2185,20 +2105,12 @@ function esc(str) {
 (function init() {
   loadSettings();
   persistLoad();
-
-  if (driveClientId) document.getElementById('drive-client-id').value = driveClientId;
-  // Drive client ID: save on blur instead of every keystroke
-  document.getElementById('drive-client-id').addEventListener('blur', saveClientId);
-
   applyTheme();
   applyModToggle();
   applyInitToggles();
-
   renderChars();
   renderJournal();
   renderHistory();
-
-  setDriveStatus('warn', '○ Not connected — paste your Client ID and click Connect');
 })();
 </script>
 </body>
